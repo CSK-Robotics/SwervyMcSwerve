@@ -28,8 +28,8 @@ public class Drivetrain {
   private final SwerveModule m_backRight = new SwerveModule(7, 8, 12, 13, 14, 15);
   */
 
-  private final SwerveModule m_frontLeft = new SwerveModule(1, 2, 0, 1, 2);
-  //private final SwerveModule m_frontRight = new SwerveModule(3, 4, 4, 5, 6, 7);
+  private final SwerveModule m_frontLeft = new SwerveModule(8, 7, 2);
+  private final SwerveModule m_frontRight = new SwerveModule(2, 1, 4);
   //private final SwerveModule m_backLeft = new SwerveModule(5, 6, 8, 9, 10, 11);
   //private final SwerveModule m_backRight = new SwerveModule(7, 8, 12, 13, 14, 15);
 
@@ -45,8 +45,8 @@ public class Drivetrain {
           m_gyro.getRotation2d(),
           new SwerveModulePosition[] {
             m_frontLeft.getPosition(),
-            /*
             m_frontRight.getPosition(),
+            /*
             m_backLeft.getPosition(),
             m_backRight.getPosition()
             */
@@ -76,8 +76,8 @@ public class Drivetrain {
                 periodSeconds));
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
     m_frontLeft.setDesiredState(swerveModuleStates[0]);
-    /*
     m_frontRight.setDesiredState(swerveModuleStates[1]);
+    /*
     m_backLeft.setDesiredState(swerveModuleStates[2]);
     m_backRight.setDesiredState(swerveModuleStates[3]);
     */
@@ -89,8 +89,8 @@ public class Drivetrain {
         m_gyro.getRotation2d(),
         new SwerveModulePosition[] {
           m_frontLeft.getPosition(),
-          /*
           m_frontRight.getPosition(),
+          /*
           m_backLeft.getPosition(),
           m_backRight.getPosition()
           */

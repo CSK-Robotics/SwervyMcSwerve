@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkFlexExternalEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -36,7 +37,7 @@ public class SwerveModule {
   private final SparkFlex m_driveMotor;
   private final SparkFlex m_turningMotor;
 
-  private final Encoder m_driveEncoder;
+  private final RelativeEncoder m_driveEncoder;
   //private final Encoder m_turningEncoder;
 
   private final CANcoder m_turningEncoderPE6;
@@ -54,34 +55,29 @@ public class SwerveModule {
               kModuleMaxAngularVelocity, kModuleMaxAngularAcceleration));
 
   // Gains are for example purposes only - must be determined for your own robot!
-  private final SimpleMotorFeedforward m_driveFeedforward = new SimpleMotorFeedforward(1, 3);
-  private final SimpleMotorFeedforward m_turnFeedforward = new SimpleMotorFeedforward(1, 0.5);
+  //private final SimpleMotorFeedforward m_driveFeedforward = new SimpleMotorFeedforward(1, 3);
+  //private final SimpleMotorFeedforward m_turnFeedforward = new SimpleMotorFeedforward(1, 0.5);
 
   /**
    * Constructs a SwerveModule with a drive motor, turning motor, drive encoder and turning encoder.
    *
    * @param driveMotorChannel PWM output for the drive motor.
    * @param turningMotorChannel PWM output for the turning motor.
-   * @param driveEncoderChannelA DIO input for the drive encoder channel A
-   * @param driveEncoderChannelB DIO input for the drive encoder channel B
-   * @param turningEncoderChannelA DIO input for the turning encoder channel A
-   * @param turningEncoderChannelB DIO input for the turning encoder channel B
+   * @param turningEncoderCANID CAN ID associated with CTR-E CANCoder
    */
   public SwerveModule(
       int driveMotorChannel,
       int turningMotorChannel,
-      int driveEncoderChannelA,
-      int driveEncoderChannelB,
       int turningEncoderCANID) {
     m_driveMotor = new SparkFlex(driveMotorChannel, MotorType.kBrushless);
     m_turningMotor = new SparkFlex(turningMotorChannel,MotorType.kBrushless);
 
-    m_driveEncoder = new Encoder(driveEncoderChannelA, driveEncoderChannelB);
+    m_driveEncoder = m_driveMotor.getEncoder(); // RelativeEncoder
     //m_turningEncoder = new Encoder(turningEncoderChannelA, turningEncoderChannelB);
     m_turningEncoderPE6 = new CANcoder(turningEncoderCANID, "rio");
 
     // NOTE: Unsure if setting this multiple times can cause issues:
-    BaseStatusSignal.setUpdateFrequencyForAll(100, m_turningEncoderPE6.getPosition(), m_turningEncoderPE6.getVelocity());
+    BaseStatusSignal.setUpdateFrequencyForAll(100, m_turningEncoderPE6.getAbsolutePosition(), m_turningEncoderPE6.getVelocity());
 
     // Set the distance per pulse for the drive encoder. We can simply use the
     // distance traveled for one rotation of the wheel divided by the encoder
@@ -104,12 +100,12 @@ public class SwerveModule {
    * @return The current state of the module.
    */
   public SwerveModuleState getState() {
-    StatusSignal<Angle> position_data = m_turningEncoderPE6.getPosition();
+    StatusSignal<Angle> position_data = m_turningEncoderPE6.getAbsolutePosition();
     Angle angle_data = position_data.getValue();
 
     return new SwerveModuleState(
         //m_driveEncoder.getRate(), new Rotation2d(m_turningEncoder.getDistance())
-        m_driveEncoder.getRate(), new Rotation2d(angle_data)
+        m_driveEncoder.getVelocity(), new Rotation2d(angle_data)
     );
   }
 
@@ -119,10 +115,10 @@ public class SwerveModule {
    * @return The current position of the module.
    */
   public SwerveModulePosition getPosition() {
-    StatusSignal<Angle> position_data = m_turningEncoderPE6.getPosition();
+    StatusSignal<Angle> position_data = m_turningEncoderPE6.getAbsolutePosition();
     Angle angle_data = position_data.getValue();
     return new SwerveModulePosition(
-      m_driveEncoder.getDistance(), new Rotation2d(angle_data));
+      m_driveEncoder.getPosition(), new Rotation2d(angle_data));
       //m_driveEncoder.getDistance(), new Rotation2d(m_turningEncoder.getDistance()));
   }
 
@@ -133,7 +129,7 @@ public class SwerveModule {
    */
   public void setDesiredState(SwerveModuleState desiredState) {
     //var encoderRotation = new Rotation2d(m_turningEncoder.getDistance());
-    StatusSignal<Angle> position_data = m_turningEncoderPE6.getPosition();
+    StatusSignal<Angle> position_data = m_turningEncoderPE6.getAbsolutePosition();
     Angle angle_data = position_data.getValue();
     var encoderRotation = new Rotation2d(angle_data);
 
@@ -148,9 +144,9 @@ public class SwerveModule {
 
     // Calculate the drive output from the drive PID controller.
     final double driveOutput =
-        m_drivePIDController.calculate(m_driveEncoder.getRate(), state.speedMetersPerSecond);
+        m_drivePIDController.calculate(m_driveEncoder.getVelocity(), state.speedMetersPerSecond);
 
-    final double driveFeedforward = m_driveFeedforward.calculate(state.speedMetersPerSecond);
+    //final double driveFeedforward = m_driveFeedforward.calculate(state.speedMetersPerSecond);
 
     // Calculate the turning motor output from the turning PID controller.
     /*
@@ -159,17 +155,23 @@ public class SwerveModule {
     */
 
     // NOTE: Does this need to be repeat
-    StatusSignal<Angle> position_data_2 = m_turningEncoderPE6.getPosition();
+    StatusSignal<Angle> position_data_2 = m_turningEncoderPE6.getAbsolutePosition();
     Angle angle_data_2 = position_data_2.getValue();
     var encoderRotation_2 = new Rotation2d(angle_data_2);
 
     final double turnOutput =
         m_turningPIDController.calculate(encoderRotation_2.getRadians(), state.angle.getRadians());
 
+    /*
     final double turnFeedforward =
-        m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
+       m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
 
     m_driveMotor.setVoltage(driveOutput + driveFeedforward);
     m_turningMotor.setVoltage(turnOutput + turnFeedforward);
+    */
+
+    
+    m_driveMotor.setVoltage(driveOutput);
+    m_turningMotor.setVoltage(turnOutput);
   }
 }
