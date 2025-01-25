@@ -148,17 +148,22 @@ public class SwerveModule {
     var encoderRotation = new Rotation2d(angle_data);
 
     // Optimize the reference state to avoid spinning further than 90 degrees
-    SwerveModuleState state = SwerveModuleState.optimize(desiredState, encoderRotation);
+    desiredState.optimize(encoderRotation);
 
     // Scale speed by cosine of angle error. This scales down movement perpendicular
     // to the desired
     // direction of travel that can occur when modules change directions. This
     // results in smoother
     // driving.
-    state.speedMetersPerSecond *= state.angle.minus(encoderRotation).getCos();
+    desiredState.speedMetersPerSecond *= desiredState.angle.minus(encoderRotation).getCos();
 
+    final double velocity = m_driveEncoder.getVelocity();
     // Calculate the drive output from the drive PID controller.
-    final double driveOutput = m_drivePIDController.calculate(m_driveEncoder.getVelocity(), state.speedMetersPerSecond);
+    final double driveOutput = m_drivePIDController.calculate(velocity,
+        desiredState.speedMetersPerSecond);
+
+    System.out.println("(" + device_name + ")" + " current: " + velocity + "; setpoint: "
+        + desiredState.speedMetersPerSecond + "; output: " + driveOutput);
 
     // final double driveFeedforward =
     // m_driveFeedforward.calculate(state.speedMetersPerSecond);
@@ -176,9 +181,12 @@ public class SwerveModule {
     var encoderRotation_2 = new Rotation2d(angle_data_2);
 
     final double turnOutput = m_turningPIDController.calculate(encoderRotation_2.getRadians(),
-        state.angle.getRadians());
+        desiredState.angle.getRadians());
 
-    System.out.println("(" + device_name + ")" + " drive: " + driveOutput + " turn: " + turnOutput + "\r\n");
+    System.out.println("(" + device_name + ")" + " current: " + velocity + "; setpoint: "
+        + desiredState.speedMetersPerSecond + "; output: " + driveOutput);
+    // System.out.println("(" + device_name + ")" + " drive: " + driveOutput + "
+    // turn: " + turnOutput + "\r\n");
 
     /*
      * final double turnFeedforward =
