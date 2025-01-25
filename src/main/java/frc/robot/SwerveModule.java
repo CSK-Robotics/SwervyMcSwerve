@@ -127,7 +127,7 @@ public class SwerveModule {
    *
    * @param desiredState Desired state with speed and angle.
    */
-  public void setDesiredState(SwerveModuleState desiredState) {
+  public void setDesiredState(SwerveModuleState desiredState, String device_name) {
     //var encoderRotation = new Rotation2d(m_turningEncoder.getDistance());
     StatusSignal<Angle> position_data = m_turningEncoderPE6.getAbsolutePosition();
     Angle angle_data = position_data.getValue();
@@ -161,6 +161,8 @@ public class SwerveModule {
 
     final double turnOutput =
         m_turningPIDController.calculate(encoderRotation_2.getRadians(), state.angle.getRadians());
+
+    System.out.println("("+device_name+")" + " drive: " + driveOutput + " turn: " + turnOutput + "\r\n");
 
     /*
     final double turnFeedforward =
