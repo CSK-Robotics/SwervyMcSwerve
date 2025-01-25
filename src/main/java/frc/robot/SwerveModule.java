@@ -8,6 +8,12 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkFlexExternalEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+// Phoenix 6 imports:
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.hardware.CANcoder;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -15,12 +21,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 
 public class SwerveModule {
   private static final double kWheelRadius = 0.0508;
-  private static final int kEncoderResolution = 4096;
+  //private static final int kEncoderResolution = 4096;
 
   private static final double kModuleMaxAngularVelocity = Drivetrain.kMaxAngularSpeed;
   private static final double kModuleMaxAngularAcceleration =
@@ -30,7 +37,9 @@ public class SwerveModule {
   private final SparkFlex m_turningMotor;
 
   private final Encoder m_driveEncoder;
-  private final Encoder m_turningEncoder;
+  //private final Encoder m_turningEncoder;
+
+  private final CANcoder m_turningEncoderPE6;
 
   // Gains are for example purposes only - must be determined for your own robot!
   private final PIDController m_drivePIDController = new PIDController(1, 0, 0);
@@ -63,23 +72,26 @@ public class SwerveModule {
       int turningMotorChannel,
       int driveEncoderChannelA,
       int driveEncoderChannelB,
-      int turningEncoderChannelA,
-      int turningEncoderChannelB) {
+      int turningEncoderCANID) {
     m_driveMotor = new SparkFlex(driveMotorChannel, MotorType.kBrushless);
     m_turningMotor = new SparkFlex(turningMotorChannel,MotorType.kBrushless);
 
     m_driveEncoder = new Encoder(driveEncoderChannelA, driveEncoderChannelB);
-    m_turningEncoder = new Encoder(turningEncoderChannelA, turningEncoderChannelB);
+    //m_turningEncoder = new Encoder(turningEncoderChannelA, turningEncoderChannelB);
+    m_turningEncoderPE6 = new CANcoder(turningEncoderCANID, "rio");
+
+    // NOTE: Unsure if setting this multiple times can cause issues:
+    BaseStatusSignal.setUpdateFrequencyForAll(100, m_turningEncoderPE6.getPosition(), m_turningEncoderPE6.getVelocity());
 
     // Set the distance per pulse for the drive encoder. We can simply use the
     // distance traveled for one rotation of the wheel divided by the encoder
     // resolution.
-    m_driveEncoder.setDistancePerPulse(2 * Math.PI * kWheelRadius / kEncoderResolution);
-
+    //m_driveEncoder.setDistancePerPulse(2 * Math.PI * kWheelRadius / kEncoderResolution);
+    
     // Set the distance (in this case, angle) in radians per pulse for the turning encoder.
     // This is the the angle through an entire rotation (2 * pi) divided by the
     // encoder resolution.
-    m_turningEncoder.setDistancePerPulse(2 * Math.PI / kEncoderResolution);
+    //m_turningEncoder.setDistancePerPulse(2 * Math.PI / kEncoderResolution);
 
     // Limit the PID Controller's input range between -pi and pi and set the input
     // to be continuous.
@@ -92,8 +104,13 @@ public class SwerveModule {
    * @return The current state of the module.
    */
   public SwerveModuleState getState() {
+    StatusSignal<Angle> position_data = m_turningEncoderPE6.getPosition();
+    Angle angle_data = position_data.getValue();
+
     return new SwerveModuleState(
-        m_driveEncoder.getRate(), new Rotation2d(m_turningEncoder.getDistance()));
+        //m_driveEncoder.getRate(), new Rotation2d(m_turningEncoder.getDistance())
+        m_driveEncoder.getRate(), new Rotation2d(angle_data)
+    );
   }
 
   /**
@@ -102,8 +119,11 @@ public class SwerveModule {
    * @return The current position of the module.
    */
   public SwerveModulePosition getPosition() {
+    StatusSignal<Angle> position_data = m_turningEncoderPE6.getPosition();
+    Angle angle_data = position_data.getValue();
     return new SwerveModulePosition(
-        m_driveEncoder.getDistance(), new Rotation2d(m_turningEncoder.getDistance()));
+      m_driveEncoder.getDistance(), new Rotation2d(angle_data));
+      //m_driveEncoder.getDistance(), new Rotation2d(m_turningEncoder.getDistance()));
   }
 
   /**
@@ -112,7 +132,11 @@ public class SwerveModule {
    * @param desiredState Desired state with speed and angle.
    */
   public void setDesiredState(SwerveModuleState desiredState) {
-    var encoderRotation = new Rotation2d(m_turningEncoder.getDistance());
+    //var encoderRotation = new Rotation2d(m_turningEncoder.getDistance());
+    StatusSignal<Angle> position_data = m_turningEncoderPE6.getPosition();
+    Angle angle_data = position_data.getValue();
+    var encoderRotation = new Rotation2d(angle_data);
+
 
     // Optimize the reference state to avoid spinning further than 90 degrees
     SwerveModuleState state = SwerveModuleState.optimize(desiredState, encoderRotation);
@@ -129,8 +153,18 @@ public class SwerveModule {
     final double driveFeedforward = m_driveFeedforward.calculate(state.speedMetersPerSecond);
 
     // Calculate the turning motor output from the turning PID controller.
+    /*
     final double turnOutput =
         m_turningPIDController.calculate(m_turningEncoder.getDistance(), state.angle.getRadians());
+    */
+
+    // NOTE: Does this need to be repeat
+    StatusSignal<Angle> position_data_2 = m_turningEncoderPE6.getPosition();
+    Angle angle_data_2 = position_data_2.getValue();
+    var encoderRotation_2 = new Rotation2d(angle_data_2);
+
+    final double turnOutput =
+        m_turningPIDController.calculate(encoderRotation_2.getRadians(), state.angle.getRadians());
 
     final double turnFeedforward =
         m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
