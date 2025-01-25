@@ -170,7 +170,6 @@ public class SwerveModule {
     m_turningMotor.setVoltage(turnOutput + turnFeedforward);
     */
 
-    
     m_driveMotor.setVoltage(driveOutput);
     m_turningMotor.setVoltage(turnOutput);
   }
