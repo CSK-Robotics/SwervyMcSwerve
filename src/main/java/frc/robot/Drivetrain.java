@@ -62,14 +62,11 @@ public class Drivetrain {
 
   public Drivetrain() {
     m_gyro.reset();
-    m_frontLeft.setDesiredState(new SwerveModuleState(2, Rotation2d.fromDegrees(0)), "frontLeft", false);
-    m_frontRight.setDesiredState(new SwerveModuleState(2, Rotation2d.fromDegrees(0)), "frontRight", false);
-
   }
 
   public void wheelsIn() {
-    m_frontLeft.setDesiredState(new SwerveModuleState(2, Rotation2d.fromDegrees(45)), "frontLeft", false);
-    m_frontRight.setDesiredState(new SwerveModuleState(2, Rotation2d.fromDegrees(135)), "frontRight", false);
+    m_frontLeft.setDesiredState(new SwerveModuleState(0.25, Rotation2d.fromDegrees(45)), "frontLeft", false);
+    m_frontRight.setDesiredState(new SwerveModuleState(0.25, Rotation2d.fromDegrees(135)), "frontRight", false);
   }
 
   /**

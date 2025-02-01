@@ -39,11 +39,11 @@ public class SwerveModule {
     private static final double kGearRatio = 6.75;
 
     private static final double kDriveWheelDistanceConversionConstant = Math.PI * 2 * kWheelRadius / kGearRatio;
-    // private static final int kEncoderResolution = 4096;
+    private static final int kEncoderResolution = 4096;
     private static final double sparkFlexMaxSpeed = 3.6576;
 
-    private static final double kModuleMaxAngularVelocity = Drivetrain.kMaxAngularSpeed;
-    private static final double kModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
+    //private static final double kModuleMaxAngularVelocity = Drivetrain.kMaxAngularSpeed;
+    //private static final double kModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
     public SwerveModuleState desiredState;
 
     private final SparkFlex m_driveMotor;
@@ -86,21 +86,30 @@ public class SwerveModule {
         m_driveMotor = new SparkFlex(driveMotorChannel, MotorType.kBrushless);
         m_turningMotor = new SparkFlex(turningMotorChannel, MotorType.kBrushless);
         
+        /*
         m_driveMotor.configure(
                 new SparkFlexConfig().apply(
                         new EncoderConfig().positionConversionFactor(kDriveWheelDistanceConversionConstant)
                                 .velocityConversionFactor(kDriveWheelDistanceConversionConstant * 60)),
                 null, null);
+        */
 
+
+        SparkFlexConfig config_m_drivingMotor = new SparkFlexConfig();
+        config_m_drivingMotor.encoder.positionConversionFactor(Constants.Swerve.driveRevToMeters);
+        config_m_drivingMotor.encoder.velocityConversionFactor(Constants.Swerve.driveRpmToMetersPerSecond);
+        config_m_drivingMotor.closedLoop.p(Constants.Swerve.driveKP);
+        config_m_drivingMotor.closedLoop.i(Constants.Swerve.driveKI);
+        config_m_drivingMotor.closedLoop.d(Constants.Swerve.driveKD);
 
         SparkFlexConfig config_m_turningMotor = new SparkFlexConfig();
         config_m_turningMotor.encoder.positionConversionFactor(360/kGearRatio);
         config_m_turningMotor.encoder.velocityConversionFactor(360/kGearRatio/60);
-        config_m_turningMotor.closedLoop.p(1);
-        config_m_turningMotor.closedLoop.i(0);
-        config_m_turningMotor.closedLoop.d(0);
+        config_m_turningMotor.closedLoop.p(Constants.Swerve.angleKP);
+        config_m_turningMotor.closedLoop.i(Constants.Swerve.angleKI);
+        config_m_turningMotor.closedLoop.d(Constants.Swerve.angleKD);
 
-
+        m_driveMotor.configure(config_m_drivingMotor, null, null);
         m_turningMotor.configure(config_m_turningMotor, null, null);
 
         rel_driveEncoder = m_driveMotor.getEncoder();
@@ -109,13 +118,12 @@ public class SwerveModule {
         rel_angleEncoder = m_turningMotor.getEncoder();
         m_turningEncoderPE6 = new CANcoder(turningEncoderCANID, "rio");
 
-
         double absolutePosition = getCANcoderAngle().getDegrees();
         rel_angleEncoder.setPosition(absolutePosition);
 
         // NOTE: Unsure if setting this multiple times can cause issues:
-        BaseStatusSignal.setUpdateFrequencyForAll(100, m_turningEncoderPE6.getAbsolutePosition(),
-               m_turningEncoderPE6.getVelocity());
+        //BaseStatusSignal.setUpdateFrequencyForAll(100, m_turningEncoderPE6.getAbsolutePosition(),
+        //       m_turningEncoderPE6.getVelocity());
 
         // Set the distance per pulse for the drive encoder. We can simply use the
         // distance traveled for one rotation of the wheel divided by the encoder
@@ -182,21 +190,23 @@ public class SwerveModule {
         Rotation2d currentAngle = getCANcoderAngle();
         this.desiredState = CTREModuleState.optimize(desiredState, currentAngle);
 
-        Rotation2d angle = this.desiredState.angle;
-        double degReference = angle.getDegrees();
+        if(Math.abs(this.desiredState.speedMetersPerSecond) <= (sparkFlexMaxSpeed * 0.01))
+        {
+            m_turningMotor.stopMotor();
+        }
+
+        double degReference = this.desiredState.angle.getDegrees()/360;
         SparkClosedLoopController turning_controller = m_turningMotor.getClosedLoopController();
         turning_controller.setReference(degReference, ControlType.kPosition, ClosedLoopSlot.kSlot0);
         
-        System.out.println( "Old desired angle: " + desiredState.angle + " New desired angle: " + this.desiredState.angle + " turning");
-        double turnPercentageOutput = 0.5;
-        m_turningMotor.set( 0.5 );
-
         SparkClosedLoopController driving_controller = m_driveMotor.getClosedLoopController();
         if(isOpenLoop)
         {
             double percentOutput = this.desiredState.speedMetersPerSecond / sparkFlexMaxSpeed;
             m_driveMotor.set(percentOutput);
+            System.out.println( "(" + device_name + ")" + " per output: " + percentOutput + " desired_speed: " + this.desiredState.speedMetersPerSecond + " current cancoder angle: " + currentAngle);
         }
+
         double velocity = this.desiredState.speedMetersPerSecond;
         driving_controller.setReference(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
     }
