@@ -4,11 +4,13 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.AnalogGyro;
 
 /** Represents a swerve drive style drivetrain. */
@@ -28,8 +30,8 @@ public class Drivetrain {
   private final SwerveModule m_backRight = new SwerveModule(7, 8, 12, 13, 14, 15);
   */
 
-  private final SwerveModule m_frontLeft = new SwerveModule(8, 7, 2);
-  private final SwerveModule m_frontRight = new SwerveModule(2, 1, 4);
+  private final SwerveModule m_frontLeft = new SwerveModule(8, 7, 9);
+  private final SwerveModule m_frontRight = new SwerveModule(2, 1, 10);
   //private final SwerveModule m_backLeft = new SwerveModule(5, 6, 8, 9, 10, 11);
   //private final SwerveModule m_backRight = new SwerveModule(7, 8, 12, 13, 14, 15);
 
@@ -60,6 +62,14 @@ public class Drivetrain {
 
   public Drivetrain() {
     m_gyro.reset();
+    m_frontLeft.setDesiredState(new SwerveModuleState(2, Rotation2d.fromDegrees(0)), "frontLeft", false);
+    m_frontRight.setDesiredState(new SwerveModuleState(2, Rotation2d.fromDegrees(0)), "frontRight", false);
+
+  }
+
+  public void wheelsIn() {
+    m_frontLeft.setDesiredState(new SwerveModuleState(2, Rotation2d.fromDegrees(45)), "frontLeft", false);
+    m_frontRight.setDesiredState(new SwerveModuleState(2, Rotation2d.fromDegrees(135)), "frontRight", false);
   }
 
   /**
@@ -85,8 +95,8 @@ public class Drivetrain {
     //System.out.println(">>>>>> SwerveModuleState (frontLeft): " + swerveModuleStates[0] +"\r\n");
     //System.out.println(">>>>>> SwerveModuleState (frontRight): " + swerveModuleStates[1] +"\r\n");
 
-    m_frontLeft.setDesiredState(swerveModuleStates[0], "frontLeft");
-    m_frontRight.setDesiredState(swerveModuleStates[1], "frontRight");
+    m_frontLeft.setDesiredState(swerveModuleStates[0], "frontLeft", true);
+    m_frontRight.setDesiredState(swerveModuleStates[1], "frontRight", true);
     /*
     m_backLeft.setDesiredState(swerveModuleStates[2]);
     m_backRight.setDesiredState(swerveModuleStates[3]);
