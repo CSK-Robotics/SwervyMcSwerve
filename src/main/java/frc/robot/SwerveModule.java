@@ -46,11 +46,11 @@ public class SwerveModule {
     private final CANcoder m_turningEncoderPE6;
 
     // Gains are for example purposes only - must be determined for your own robot!
-    private final PIDController m_drivePIDController = new PIDController(0.1, 0, 0);
+    private final PIDController m_drivePIDController = new PIDController(1, 0, 0);
 
     // Gains are for example purposes only - must be determined for your own robot!
     private final ProfiledPIDController m_turningPIDController = new ProfiledPIDController(
-            0.25,
+            1,
             0,
             0,
             new TrapezoidProfile.Constraints(
@@ -78,8 +78,12 @@ public class SwerveModule {
 
         m_driveMotor.configure(
                 new SparkFlexConfig().apply(
-                        new EncoderConfig().positionConversionFactor(kDriveWheelDistanceConversionConstant)
-                                .velocityConversionFactor(kDriveWheelDistanceConversionConstant * 60)),
+                        new EncoderConfig()
+                                .positionConversionFactor(
+                                        kDriveWheelDistanceConversionConstant)
+                                .velocityConversionFactor(
+                                        kDriveWheelDistanceConversionConstant
+                                                * 60)),
                 null, null);
         m_driveEncoder = m_driveMotor.getEncoder(); // RelativeEncoder
         // m_turningEncoder = new Encoder(turningEncoderChannelA,
@@ -149,14 +153,14 @@ public class SwerveModule {
         // Optimize the reference state to avoid spinning further than 90 degrees
         desiredState.optimize(encoderRotation);
 
-        // Scale speed by cosine of angle error. This scales down movement perpendicular
-        // to the desired
-        // direction of travel that can occur when modules change directions. This
-        // results in smoother
-        // driving.
+        /*
+         * Scale speed by cosine of angle error. This scales down movement perpendicular
+         * to the desired direction of travel that can occur when modules change
+         * directions. This results in smoother driving.
+         */
         desiredState.speedMetersPerSecond *= desiredState.angle.minus(encoderRotation).getCos();
 
-        final double velocity = m_driveEncoder.getVelocity();
+        final double velocity = m_driveEncoder.getVelocity(); // RPM(revs per minute)
         // Calculate the drive output from the drive PID controller.
         final double driveOutput = m_drivePIDController.calculate(velocity,
                 desiredState.speedMetersPerSecond);
@@ -166,7 +170,7 @@ public class SwerveModule {
         // + desiredState.speedMetersPerSecond + "; output: " + driveOutput);
 
         // final double driveFeedforward =
-        // m_driveFeedforward.calculate(state.speedMetersPerSecond);
+        // m_driveFeedforward.calculate(desiredState.speedMetersPerSecond);
 
         // Calculate the turning motor output from the turning PID controller.
         /*
@@ -175,25 +179,27 @@ public class SwerveModule {
          * state.angle.getRadians());
          */
 
-        // NOTE: Does this need to be repeat
-        StatusSignal<Angle> position_data_2 = m_turningEncoderPE6.getAbsolutePosition();
-        Angle angle_data_2 = position_data_2.getValue();
-        var encoderRotation_2 = new Rotation2d(angle_data_2);
+        /**
+         * NOTE: Does this need to be repeat(Don't think we need this to be repeated)
+         * StatusSignal<Angle> position_data_2 = m_turningEncoderPE6.getPosition();
+         * Angle angle_data_2 = position_data_2.getValue();
+         * var encoderRotation_2 = new Rotation2d(angle_data_2);
+         */
 
-        final double turnOutput = m_turningPIDController.calculate(encoderRotation_2.getRadians(),
+        final double turnOutput = m_turningPIDController.calculate(encoderRotation.getRadians(),
                 desiredState.angle.getRadians());
 
-        System.out.println("(" + device_name + ")" + " current: " + encoderRotation_2.getDegrees() + "; setpoint: "
+        System.out.println("(" + device_name + ")" + " current: " + encoderRotation.getDegrees() + "; setpoint: "
                 + desiredState.angle.getDegrees() + "; output: " + turnOutput);
         // System.out.println("(" + device_name + ")" + " drive: " + driveOutput + "
         // turn: " + turnOutput + "\r\n");
 
         final double turnFeedforward = m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
 
-        //m_driveMotor.setVoltage(driveOutput + driveFeedforward);
+        // m_driveMotor.setVoltage(driveOutput + driveFeedforward);
         m_turningMotor.setVoltage(turnOutput + turnFeedforward);
 
         // m_driveMotor.setVoltage(driveOutput);
-        //m_turningMotor.setVoltage(turnOutput * 12);
+        // m_turningMotor.setVoltage(turnOutput * 12);
     }
 }
