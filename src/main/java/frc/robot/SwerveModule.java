@@ -87,7 +87,7 @@ public class SwerveModule {
         m_turningEncoderPE6 = new CANcoder(turningEncoderCANID, "rio");
 
         // NOTE: Unsure if setting this multiple times can cause issues:
-        BaseStatusSignal.setUpdateFrequencyForAll(100, m_turningEncoderPE6.getAbsolutePosition(),
+        BaseStatusSignal.setUpdateFrequencyForAll(50, m_turningEncoderPE6.getAbsolutePosition(),
                 m_turningEncoderPE6.getVelocity());
 
         // Set the distance per pulse for the drive encoder. We can simply use the
