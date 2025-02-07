@@ -24,7 +24,7 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     //driveWithJoystick(false);
     //m_swerve.updateOdometry();
-    m_swerve.wheelsIn();
+    //m_swerve.wheelsIn();
   }
 
   @Override
@@ -58,6 +58,8 @@ public class Robot extends TimedRobot {
     final var rot =
         -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02))
             * Drivetrain.kMaxAngularSpeed;
+
+    System.out.println("rotation from stick: " + rot);
 
     m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative, getPeriod());
   }

@@ -30,13 +30,13 @@ public final class Constants {
         // Swerve Module Type
         public static final SwerveInstances chosenModule = SwerveInstances.SDSMK4i(SwerveInstances.driveGearRatios.SDSMK4i_L2);
         /* Angle Encoder Invert */
-        //public static final boolean canCoderInvert = chosenModule.canCoderInvert;
-        //public static final boolean driveMotorInvert = chosenModule.driveMotorInvert;
+        public static final boolean canCoderInvert = chosenModule.canCoderInvert;
+        public static final boolean driveMotorInvert = chosenModule.driveMotorInvert;
         /* Motor Inverts */
-        //public static final boolean angleMotorInvert = chosenModule.angleMotorInvert;
-        //public static final double angleGearRatio = chosenModule.angleGearRatio;
+        public static final boolean angleMotorInvert = chosenModule.angleMotorInvert;
+        public static final double angleGearRatio = chosenModule.angleGearRatio;
         // the number of degrees that a single rotation of the turn motor turns the wheel.
-        //public static final double DegreesPerTurnRotation = 360/angleGearRatio;
+        public static final double DegreesPerTurnRotation = 360/angleGearRatio;
         /* Module Gear Ratios */
         public static final double driveGearRatio = chosenModule.driveGearRatio;
 
@@ -73,14 +73,13 @@ public final class Constants {
         /* Drive Motor info  */
         public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
 
-        //public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps * wheelCircumference)
-        //        / driveGearRatio;
+        public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps * wheelCircumference) / driveGearRatio;
 
         /* Drive Motor PID Values */
         public static final double driveKP = 0.04;
         public static final double driveKI = 0.0;
         public static final double driveKD = 0.0;
-        //public static final double driveKFF = 1 / kDriveWheelFreeSpeedRps;
+        public static final double driveKFF = 1 / kDriveWheelFreeSpeedRps;
         /** Meters per Second */
         public static final double maxSpeed = 3.6576;
         /** Radians per Second */
@@ -98,7 +97,7 @@ public final class Constants {
                 public static final int driveMotorID = 2;
                 public static final int angleMotorID = 3;
                 public static final int canCoderID = 10;
-                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(162.146-180); //Rotation2d.fromDegrees(37.7);
+                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(140.9); //Rotation2d.fromDegrees(37.7);
                 public static final RevSwerveModuleConstants constants =
                     new RevSwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
             }
@@ -108,7 +107,7 @@ public final class Constants {
                 public static final int driveMotorID = 4;
                 public static final int angleMotorID = 5;
                 public static final int canCoderID = 11;
-                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(26.015);
+                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(76.9);
                 public static final RevSwerveModuleConstants constants =
                     new RevSwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
             }
@@ -118,7 +117,7 @@ public final class Constants {
                 public static final int driveMotorID = 6;
                 public static final int angleMotorID = 7;
                 public static final int canCoderID = 12;
-                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(263.603);
+                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(-0.70308);
                 public static final RevSwerveModuleConstants constants =
                     new RevSwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
             }
@@ -128,7 +127,7 @@ public final class Constants {
                 public static final int driveMotorID = 8;
                 public static final int angleMotorID = 9;
                 public static final int canCoderID = 13;
-                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(317.021);
+                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(176.48);
                 public static final RevSwerveModuleConstants constants =
                     new RevSwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
             }
