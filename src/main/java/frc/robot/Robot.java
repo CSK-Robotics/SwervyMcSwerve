@@ -59,8 +59,17 @@ public class Robot extends TimedRobot {
         -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02))
             * Drivetrain.kMaxAngularSpeed;
 
-    System.out.println("rotation from stick: " + rot);
-
-    m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative, getPeriod());
+    //System.out.println("rotation from stick: " + rot);
+    final var x_btn_pressed = m_controller.getAButtonPressed();
+    if(x_btn_pressed) {
+      try {
+        m_swerve.realignWheels();
+      } catch (InterruptedException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    } else {
+      m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative, getPeriod());
+    }
   }
 }

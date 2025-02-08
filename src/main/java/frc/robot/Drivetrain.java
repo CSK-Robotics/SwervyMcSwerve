@@ -42,10 +42,10 @@ public class Drivetrain {
   private final SwerveModule m_backRight = new SwerveModule(7, 8, 12, 13, 14, 15);
   */
 
-  private final SwerveModule m_frontLeft = new SwerveModule(8, 7, 9, Constants.Swerve.Modules.Mod0.constants);
-  private final SwerveModule m_frontRight = new SwerveModule(2, 1, 10, Constants.Swerve.Modules.Mod1.constants);
-  private final SwerveModule m_backLeft = new SwerveModule(4, 3, 11, Constants.Swerve.Modules.Mod2.constants);
-  private final SwerveModule m_backRight = new SwerveModule(5, 6, 12, Constants.Swerve.Modules.Mod3.constants);
+  private final SwerveModule m_frontLeft = new SwerveModule(8, 7, 9, Constants.Swerve.Modules.Mod0.constants, "m_frontLeft", false);
+  private final SwerveModule m_frontRight = new SwerveModule(2, 1, 10, Constants.Swerve.Modules.Mod1.constants, "m_frontRight", false);
+  private final SwerveModule m_backLeft = new SwerveModule(4, 3, 11, Constants.Swerve.Modules.Mod2.constants, "m_backLeft", false);
+  private final SwerveModule m_backRight = new SwerveModule(5, 6, 12, Constants.Swerve.Modules.Mod3.constants, "m_backRight", false);
 
   private final AnalogGyro m_gyro = new AnalogGyro(0);
 
@@ -70,12 +70,15 @@ public class Drivetrain {
 
   public Drivetrain() {
     m_gyro.reset();
+    //m_frontLeft.synchronizeEncoders();
   }
 
+  /*
   public void wheelsIn() {
     m_frontLeft.setDesiredState(new SwerveModuleState(0.25, Rotation2d.fromDegrees(45)), "frontLeft", false);
     m_frontRight.setDesiredState(new SwerveModuleState(0.25, Rotation2d.fromDegrees(135)), "frontRight", false);
   }
+  */
 
   private static ChassisSpeeds correctForDynamics(ChassisSpeeds originalSpeeds) {
         final double LOOP_TIME_S = 0.02;
@@ -119,7 +122,7 @@ public class Drivetrain {
               rot
       );
     desiredChassisSpeeds = correctForDynamics(desiredChassisSpeeds);
-    System.out.println("desired chassis: " + desiredChassisSpeeds);
+    //System.out.println("desired chassis: " + desiredChassisSpeeds);
     //SwerveModuleState[] swerveModuleStates = Constants.Swerve.swerveKinematics.toSwerveModuleStates(desiredChassisSpeeds);
     SwerveModuleState[] swerveModuleStates = m_kinematics.toSwerveModuleStates(desiredChassisSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
@@ -143,6 +146,13 @@ public class Drivetrain {
     m_frontRight.setDesiredState(swerveModuleStates[1], "frontRight", true);
     m_backLeft.setDesiredState(swerveModuleStates[2], "backLeft", true);
     m_backRight.setDesiredState(swerveModuleStates[3], "backRight", true);
+  }
+
+  public void realignWheels() throws InterruptedException {
+    m_frontLeft.synchronizeEncoders();
+    m_frontRight.synchronizeEncoders();
+    m_backLeft.synchronizeEncoders();
+    m_backRight.synchronizeEncoders();
   }
 
   /** Updates the field relative position of the robot. */

@@ -10,11 +10,15 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkFlexExternalEncoder;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.EncoderConfig;
 
 import static edu.wpi.first.units.Units.Rotation;
+
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 // Phoenix 6 imports:
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -49,6 +53,7 @@ public class SwerveModule {
 
     //private static final double kModuleMaxAngularVelocity = Drivetrain.kMaxAngularSpeed;
     //private static final double kModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
+    private String moduleName;
     public SwerveModuleState desiredState;
 
     private final SparkFlex m_driveMotor;
@@ -89,9 +94,12 @@ public class SwerveModule {
             int driveMotorChannel,
             int turningMotorChannel,
             int turningEncoderCANID,
-            RevSwerveModuleConstants constants) {
+            RevSwerveModuleConstants constants,
+            String name,
+            Boolean invert) {
 
         this.constants = constants; // NOTE: is this right?? idk
+        this.moduleName = name;
         m_driveMotor = new SparkFlex(driveMotorChannel, MotorType.kBrushless);
         m_turningMotor = new SparkFlex(turningMotorChannel, MotorType.kBrushless);
         
@@ -110,6 +118,7 @@ public class SwerveModule {
         config_m_drivingMotor.closedLoop.i(Constants.Swerve.driveKI);
         config_m_drivingMotor.closedLoop.d(Constants.Swerve.driveKD);
         config_m_drivingMotor.closedLoop.velocityFF(1/565); //Kv=565 for NEO Vortex (look up on website)
+        config_m_drivingMotor.inverted(invert);
 
         SparkFlexConfig config_m_turningMotor = new SparkFlexConfig();
         config_m_turningMotor.encoder.positionConversionFactor(Constants.Swerve.DegreesPerTurnRotation);
@@ -122,15 +131,15 @@ public class SwerveModule {
         config_m_turningMotor.smartCurrentLimit(Constants.Swerve.angleContinuousCurrentLimit);
 
         // Encoders inside the motor are configured and initial positions are set
-        m_driveMotor.configure(config_m_drivingMotor, null, null);
-        m_turningMotor.configure(config_m_turningMotor, null, null);
+        m_driveMotor.configure(config_m_drivingMotor, SparkBase.ResetMode.kResetSafeParameters, null);
+        m_turningMotor.configure(config_m_turningMotor, SparkBase.ResetMode.kResetSafeParameters, null);
         rel_driveEncoder = m_driveMotor.getEncoder();
         rel_driveEncoder.setPosition(0);
         rel_angleEncoder = m_turningMotor.getEncoder();
 
         m_turningEncoderPE6 = new CANcoder(turningEncoderCANID, "rio");
 
-        synchronizeEncoders();
+        //synchronizeEncoders();
 
         // NOTE: Unsure if setting this multiple times can cause issues:
         //BaseStatusSignal.setUpdateFrequencyForAll(100, m_turningEncoderPE6.getAbsolutePosition(),
@@ -209,7 +218,7 @@ public class SwerveModule {
             m_turningMotor.stopMotor();
         }
         double degReference = this.desiredState.angle.getDegrees();
-        System.out.println("(" + device_name + ")" + "degReference: " + degReference);
+        //System.out.println("(" + device_name + ")" + "degReference: " + degReference);
         SparkClosedLoopController turning_controller = m_turningMotor.getClosedLoopController();
         turning_controller.setReference(degReference, ControlType.kPosition, ClosedLoopSlot.kSlot0);
         
@@ -227,10 +236,27 @@ public class SwerveModule {
         //System.out.println( "(" + device_name + ")" + "degRef: " + degReference + " desired_speed: " + this.desiredState.speedMetersPerSecond + " current cancoder angle: " + currentAngle);
     }
 
-    public void synchronizeEncoders()
+    public void synchronizeEncoders() throws InterruptedException 
     {
-        //double absolutePosition = getCANcoderAngle().getDegrees() - this.constants.angleOffset.getDegrees();
-        double absolutePosition = getCANcoderAngle().getDegrees();
+        rel_angleEncoder.setPosition(0);
+        double degree_rot = 0;
+        while (getCANcoderAngle().getDegrees() <= this.constants.angleOffset.getDegrees()-1 || getCANcoderAngle().getDegrees() >= this.constants.angleOffset.getDegrees()+1) {
+            System.out.println("degree_rot: " + degree_rot + " current pos: " + getCANcoderAngle().getDegrees() );
+            SparkClosedLoopController turning_controller = m_turningMotor.getClosedLoopController();
+            turning_controller.setReference(degree_rot, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+            degree_rot = degree_rot+0.5;
+            Thread.sleep(5);
+        }
+        rel_angleEncoder.setPosition(0);
+        
+        
+        //while (true) {
+        /*
+        double current_canCoder_state = getCANcoderAngle().getDegrees();
+        double absolutePosition = current_canCoder_state - this.constants.angleOffset.getDegrees();
+        System.out.println("(" + moduleName + ")" +" absolute positions: " + absolutePosition + " cancoder position: " + current_canCoder_state);
+
         rel_angleEncoder.setPosition(absolutePosition);
+        */
     }
 }
