@@ -5,11 +5,17 @@
 package frc.robot;
 
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkFlexExternalEncoder;
+import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.EncoderConfig;
-import com.revrobotics.spark.config.SparkFlexConfig;
+
+import static edu.wpi.first.units.Units.Rotation;
+
 // Phoenix 6 imports:
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
@@ -26,40 +32,50 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+import frc.lib.util.swerveUtil.CTREModuleState;
+import frc.lib.util.swerveUtil.RevSwerveModuleConstants;
 
 public class SwerveModule {
+
+    // TODO: Remove these constants:
+    ////////////////////////////////////////////
     private static final double kWheelRadius = 0.0508;
     private static final double kGearRatio = 6.75;
 
     private static final double kDriveWheelDistanceConversionConstant = Math.PI * 2 * kWheelRadius / kGearRatio;
-    // private static final int kEncoderResolution = 4096;
+    private static final int kEncoderResolution = 4096;
+    private static final double sparkFlexMaxSpeed = 3.6576;
+    ////////////////////////////////////////////
 
-    private static final double kModuleMaxAngularVelocity = Drivetrain.kMaxAngularSpeed;
-    private static final double kModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
+    //private static final double kModuleMaxAngularVelocity = Drivetrain.kMaxAngularSpeed;
+    //private static final double kModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
+    public SwerveModuleState desiredState;
 
     private final SparkFlex m_driveMotor;
     private final SparkFlex m_turningMotor;
 
-    private final RelativeEncoder m_driveEncoder;
-    // private final Encoder m_turningEncoder;
+    private final RelativeEncoder rel_driveEncoder;
+    private final RelativeEncoder rel_angleEncoder;
 
     private final CANcoder m_turningEncoderPE6;
+    private final RevSwerveModuleConstants constants;
 
     // Gains are for example purposes only - must be determined for your own robot!
-    private final PIDController m_drivePIDController = new PIDController(0.1, 0, 0);
+    private final PIDController m_drivePIDController = new PIDController(1, 0, 0);
 
     // Gains are for example purposes only - must be determined for your own robot!
+    /*
     private final ProfiledPIDController m_turningPIDController = new ProfiledPIDController(
-            0.25,
+            250,
             0,
             0,
             new TrapezoidProfile.Constraints(
                     kModuleMaxAngularVelocity, kModuleMaxAngularAcceleration));
+    */
 
     // Gains are for example purposes only - must be determined for your own robot!
-    // private final SimpleMotorFeedforward m_driveFeedforward = new
-    // SimpleMotorFeedforward(1, 3);
-    private final SimpleMotorFeedforward m_turnFeedforward = new SimpleMotorFeedforward(1, 0.5);
+    //private final SimpleMotorFeedforward m_driveFeedforward = new SimpleMotorFeedforward(1, 3);
+    //private final SimpleMotorFeedforward m_turnFeedforward = new SimpleMotorFeedforward(1, 0.5);
 
     /**
      * Constructs a SwerveModule with a drive motor, turning motor, drive encoder
@@ -72,28 +88,58 @@ public class SwerveModule {
     public SwerveModule(
             int driveMotorChannel,
             int turningMotorChannel,
-            int turningEncoderCANID) {
+            int turningEncoderCANID,
+            RevSwerveModuleConstants constants) {
+
+        this.constants = constants; // NOTE: is this right?? idk
         m_driveMotor = new SparkFlex(driveMotorChannel, MotorType.kBrushless);
         m_turningMotor = new SparkFlex(turningMotorChannel, MotorType.kBrushless);
-
+        
+        /*
         m_driveMotor.configure(
                 new SparkFlexConfig().apply(
                         new EncoderConfig().positionConversionFactor(kDriveWheelDistanceConversionConstant)
                                 .velocityConversionFactor(kDriveWheelDistanceConversionConstant * 60)),
                 null, null);
-        m_driveEncoder = m_driveMotor.getEncoder(); // RelativeEncoder
-        // m_turningEncoder = new Encoder(turningEncoderChannelA,
-        // turningEncoderChannelB);
+        */
+
+        SparkFlexConfig config_m_drivingMotor = new SparkFlexConfig();
+        config_m_drivingMotor.encoder.positionConversionFactor(Constants.Swerve.driveRevToMeters);
+        config_m_drivingMotor.encoder.velocityConversionFactor(Constants.Swerve.driveRpmToMetersPerSecond);
+        config_m_drivingMotor.closedLoop.p(Constants.Swerve.driveKP);
+        config_m_drivingMotor.closedLoop.i(Constants.Swerve.driveKI);
+        config_m_drivingMotor.closedLoop.d(Constants.Swerve.driveKD);
+        config_m_drivingMotor.closedLoop.velocityFF(1/565); //Kv=565 for NEO Vortex (look up on website)
+
+        SparkFlexConfig config_m_turningMotor = new SparkFlexConfig();
+        config_m_turningMotor.encoder.positionConversionFactor(Constants.Swerve.DegreesPerTurnRotation);
+        config_m_turningMotor.encoder.velocityConversionFactor(Constants.Swerve.DegreesPerTurnRotation / 60);
+        config_m_turningMotor.closedLoop.p(Constants.Swerve.angleKP);
+        config_m_turningMotor.closedLoop.i(Constants.Swerve.angleKI);
+        config_m_turningMotor.closedLoop.d(Constants.Swerve.angleKD);
+        config_m_turningMotor.closedLoop.outputRange(-Constants.Swerve.anglePower, Constants.Swerve.anglePower);
+        config_m_turningMotor.closedLoopRampRate(Constants.Swerve.angleRampRate);
+        config_m_turningMotor.smartCurrentLimit(Constants.Swerve.angleContinuousCurrentLimit);
+
+        // Encoders inside the motor are configured and initial positions are set
+        m_driveMotor.configure(config_m_drivingMotor, null, null);
+        m_turningMotor.configure(config_m_turningMotor, null, null);
+        rel_driveEncoder = m_driveMotor.getEncoder();
+        rel_driveEncoder.setPosition(0);
+        rel_angleEncoder = m_turningMotor.getEncoder();
+
         m_turningEncoderPE6 = new CANcoder(turningEncoderCANID, "rio");
 
+        synchronizeEncoders();
+
         // NOTE: Unsure if setting this multiple times can cause issues:
-        BaseStatusSignal.setUpdateFrequencyForAll(100, m_turningEncoderPE6.getAbsolutePosition(),
-                m_turningEncoderPE6.getVelocity());
+        //BaseStatusSignal.setUpdateFrequencyForAll(100, m_turningEncoderPE6.getAbsolutePosition(),
+        //       m_turningEncoderPE6.getVelocity());
 
         // Set the distance per pulse for the drive encoder. We can simply use the
         // distance traveled for one rotation of the wheel divided by the encoder
         // resolution.
-        // m_driveEncoder.setDistancePerPulse(2 * Math.PI * kWheelRadius /
+        // rel_driveEncoder.setDistancePerPulse(2 * Math.PI * kWheelRadius /
         // kEncoderResolution);
 
         // Set the distance (in this case, angle) in radians per pulse for the turning
@@ -104,7 +150,7 @@ public class SwerveModule {
 
         // Limit the PID Controller's input range between -pi and pi and set the input
         // to be continuous.
-        m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
+        //m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
     }
 
     /**
@@ -113,12 +159,15 @@ public class SwerveModule {
      * @return The current state of the module.
      */
     public SwerveModuleState getState() {
-        StatusSignal<Angle> position_data = m_turningEncoderPE6.getAbsolutePosition();
-        Angle angle_data = position_data.getValue();
+        //StatusSignal<Angle> position_data = m_turningEncoderPE6.getAbsolutePosition();
+        //Angle angle_data = position_data.getValue();
+
+        
 
         return new SwerveModuleState(
-                // m_driveEncoder.getRate(), new Rotation2d(m_turningEncoder.getDistance())
-                m_driveEncoder.getVelocity(), new Rotation2d(angle_data));
+                // rel_driveEncoder.getRate(), new Rotation2d(m_turningEncoder.getDistance())
+                //rel_driveEncoder.getVelocity(), new Rotation2d(angle_data));
+                rel_driveEncoder.getVelocity(), Rotation2d.fromDegrees(rel_angleEncoder.getPosition()));
     }
 
     /**
@@ -127,12 +176,21 @@ public class SwerveModule {
      * @return The current position of the module.
      */
     public SwerveModulePosition getPosition() {
+        //StatusSignal<Angle> position_data = m_turningEncoderPE6.getAbsolutePosition();
+        //Angle angle_data = position_data.getValue();
+
+        return new SwerveModulePosition(
+                rel_driveEncoder.getPosition(), Rotation2d.fromDegrees(rel_angleEncoder.getPosition())
+        );
+        // rel_driveEncoder.getDistance(), new
+        // Rotation2d(m_turningEncoder.getDistance()));
+    }
+
+    public Rotation2d getCANcoderAngle() {
         StatusSignal<Angle> position_data = m_turningEncoderPE6.getAbsolutePosition();
         Angle angle_data = position_data.getValue();
-        return new SwerveModulePosition(
-                m_driveEncoder.getPosition(), new Rotation2d(angle_data));
-        // m_driveEncoder.getDistance(), new
-        // Rotation2d(m_turningEncoder.getDistance()));
+        var encoderRotation = new Rotation2d(angle_data);
+        return encoderRotation;
     }
 
     /**
@@ -140,60 +198,39 @@ public class SwerveModule {
      *
      * @param desiredState Desired state with speed and angle.
      */
-    public void setDesiredState(SwerveModuleState desiredState, String device_name) {
-        // var encoderRotation = new Rotation2d(m_turningEncoder.getDistance());
-        StatusSignal<Angle> position_data = m_turningEncoderPE6.getAbsolutePosition();
-        Angle angle_data = position_data.getValue();
-        var encoderRotation = new Rotation2d(angle_data);
+    public void setDesiredState(SwerveModuleState desiredState, String device_name, boolean isOpenLoop) {
+        // Turning motor controller:
+        //System.out.println("1st desired: " + desiredState.angle.getDegrees());
+        //Rotation2d currentAngle = getCANcoderAngle();
+        this.desiredState = CTREModuleState.optimize(desiredState, getState().angle);
 
-        // Optimize the reference state to avoid spinning further than 90 degrees
-        desiredState.optimize(encoderRotation);
+        if(Math.abs(this.desiredState.speedMetersPerSecond) <= (sparkFlexMaxSpeed * 0.01))
+        {
+            m_turningMotor.stopMotor();
+        }
+        double degReference = this.desiredState.angle.getDegrees();
+        System.out.println("(" + device_name + ")" + "degReference: " + degReference);
+        SparkClosedLoopController turning_controller = m_turningMotor.getClosedLoopController();
+        turning_controller.setReference(degReference, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+        
+        // Drive motor controller:
+        SparkClosedLoopController driving_controller = m_driveMotor.getClosedLoopController();
+        if(isOpenLoop)
+        {
+            double percentOutput = this.desiredState.speedMetersPerSecond / sparkFlexMaxSpeed;
+            m_driveMotor.set(percentOutput);
+        } else{
+            double velocity = this.desiredState.speedMetersPerSecond;
+            driving_controller.setReference(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        }
 
-        // Scale speed by cosine of angle error. This scales down movement perpendicular
-        // to the desired
-        // direction of travel that can occur when modules change directions. This
-        // results in smoother
-        // driving.
-        desiredState.speedMetersPerSecond *= desiredState.angle.minus(encoderRotation).getCos();
+        //System.out.println( "(" + device_name + ")" + "degRef: " + degReference + " desired_speed: " + this.desiredState.speedMetersPerSecond + " current cancoder angle: " + currentAngle);
+    }
 
-        final double velocity = m_driveEncoder.getVelocity();
-        // Calculate the drive output from the drive PID controller.
-        final double driveOutput = m_drivePIDController.calculate(velocity,
-                desiredState.speedMetersPerSecond);
-
-        // System.out.println("(" + device_name + ")" + " current: " + velocity + ";
-        // setpoint: "
-        // + desiredState.speedMetersPerSecond + "; output: " + driveOutput);
-
-        // final double driveFeedforward =
-        // m_driveFeedforward.calculate(state.speedMetersPerSecond);
-
-        // Calculate the turning motor output from the turning PID controller.
-        /*
-         * final double turnOutput =
-         * m_turningPIDController.calculate(m_turningEncoder.getDistance(),
-         * state.angle.getRadians());
-         */
-
-        // NOTE: Does this need to be repeat
-        StatusSignal<Angle> position_data_2 = m_turningEncoderPE6.getAbsolutePosition();
-        Angle angle_data_2 = position_data_2.getValue();
-        var encoderRotation_2 = new Rotation2d(angle_data_2);
-
-        final double turnOutput = m_turningPIDController.calculate(encoderRotation_2.getRadians(),
-                desiredState.angle.getRadians());
-
-        System.out.println("(" + device_name + ")" + " current: " + encoderRotation_2.getDegrees() + "; setpoint: "
-                + desiredState.angle.getDegrees() + "; output: " + turnOutput);
-        // System.out.println("(" + device_name + ")" + " drive: " + driveOutput + "
-        // turn: " + turnOutput + "\r\n");
-
-        final double turnFeedforward = m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
-
-        //m_driveMotor.setVoltage(driveOutput + driveFeedforward);
-        m_turningMotor.setVoltage(turnOutput + turnFeedforward);
-
-        // m_driveMotor.setVoltage(driveOutput);
-        //m_turningMotor.setVoltage(turnOutput * 12);
+    public void synchronizeEncoders()
+    {
+        //double absolutePosition = getCANcoderAngle().getDegrees() - this.constants.angleOffset.getDegrees();
+        double absolutePosition = getCANcoderAngle().getDegrees();
+        rel_angleEncoder.setPosition(absolutePosition);
     }
 }
