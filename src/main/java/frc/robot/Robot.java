@@ -60,6 +60,8 @@ public class Robot extends TimedRobot {
             * Drivetrain.kMaxAngularSpeed;
 
     //System.out.println("rotation from stick: " + rot);
+    m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative, getPeriod());
+    /*
     final var x_btn_pressed = m_controller.getAButtonPressed();
     if(x_btn_pressed) {
       try {
@@ -71,5 +73,6 @@ public class Robot extends TimedRobot {
     } else {
       m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative, getPeriod());
     }
+    */
   }
 }

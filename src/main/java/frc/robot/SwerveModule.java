@@ -139,7 +139,7 @@ public class SwerveModule {
 
         m_turningEncoderPE6 = new CANcoder(turningEncoderCANID, "rio");
 
-        //synchronizeEncoders();
+        synchronizeEncoders2();
 
         // NOTE: Unsure if setting this multiple times can cause issues:
         //BaseStatusSignal.setUpdateFrequencyForAll(100, m_turningEncoderPE6.getAbsolutePosition(),
@@ -234,6 +234,13 @@ public class SwerveModule {
         }
 
         //System.out.println( "(" + device_name + ")" + "degRef: " + degReference + " desired_speed: " + this.desiredState.speedMetersPerSecond + " current cancoder angle: " + currentAngle);
+    }
+
+    public void synchronizeEncoders2() {
+        double current_canCoder_state = getCANcoderAngle().getDegrees();
+        double absolutePosition = current_canCoder_state - this.constants.angleOffset.getDegrees();
+        System.out.println("(" + moduleName + ")" +" absolute positions: " + absolutePosition + " cancoder position: " + current_canCoder_state);
+        rel_angleEncoder.setPosition(-absolutePosition);
     }
 
     public void synchronizeEncoders() throws InterruptedException 
