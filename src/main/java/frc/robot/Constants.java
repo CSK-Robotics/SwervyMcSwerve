@@ -13,7 +13,6 @@ import frc.lib.util.swerveUtil.SwerveInstances;
 public final class Constants {
     public static final double stickDeadband = 0.05;
 
-
     public static final class Swerve {
 
         // Spark Max Idle Modes
@@ -147,7 +146,34 @@ public final class Constants {
         public static final double LARGEST_DISTANCE = 0.1;
     }
 
-    public static final class AutoConstants {
+    public static final class NeoMotorConstants {
+        public static final double kFreeSpeedRpm = 5676;
+    }
+
+    public static final class AutonomousPosition {
+        public static final class LeftPosition {
+            public static int desiredAprilTag = 1;
+            public static int pipelineID = 1;
+            public static String starterPathPlanner = "";
+            public static float areaAprilTag = 500;
+        }
+
+        public static final class RightPosition {
+            public static int desiredAprilTag = 2;
+            public static int pipelineID = 2;
+            public static String starterPathPlanner = "";
+            public static float areaAprilTag = 500;
+        }
+
+        public static final class CenterPosition {
+            public static int desiredAprilTag = 3;
+            public static int pipelineID = 3;
+            public static String starterPathPlanner = "";
+            public static float areaAprilTag = 500;
+        }
+    }
+
+    public static final class AutoMotorConstants {
         public static final double kMaxSpeedMetersPerSecond = 2;
         public static final double kMaxAccelerationMetersPerSecondSquared = 1;
         public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI * 16;
@@ -170,9 +196,5 @@ public final class Constants {
         public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
                 new TrapezoidProfile.Constraints(kMaxAngularSpeedRadiansPerSecond,
                         kMaxAngularSpeedRadiansPerSecondSquared);
-    }
-
-    public static final class NeoMotorConstants {
-        public static final double kFreeSpeedRpm = 5676;
     }
 }

@@ -35,12 +35,7 @@ public class Drivetrain {
   private final Translation2d m_backLeftLocation = new Translation2d(-Constants.Swerve.wheelBase / 2.0, Constants.Swerve.trackWidth / 2.0);
   private final Translation2d m_backRightLocation = new Translation2d(-Constants.Swerve.wheelBase / 2.0, -Constants.Swerve.trackWidth / 2.0);
 
-  /*
-  private final SwerveModule m_frontLeft = new SwerveModule(1, 2, 0, 1, 2, 3);
-  private final SwerveModule m_frontRight = new SwerveModule(3, 4, 4, 5, 6, 7);
-  private final SwerveModule m_backLeft = new SwerveModule(5, 6, 8, 9, 10, 11);
-  private final SwerveModule m_backRight = new SwerveModule(7, 8, 12, 13, 14, 15);
-  */
+  public final Auto m_auto_manager = new Auto();
 
   private final SwerveModule m_frontLeft = new SwerveModule(8, 7, 9, Constants.Swerve.Modules.Mod0.constants, "m_frontLeft", false);
   private final SwerveModule m_frontRight = new SwerveModule(2, 1, 10, Constants.Swerve.Modules.Mod1.constants, "m_frontRight", false);
@@ -73,12 +68,9 @@ public class Drivetrain {
     //m_frontLeft.synchronizeEncoders();
   }
 
-  /*
-  public void wheelsIn() {
-    m_frontLeft.setDesiredState(new SwerveModuleState(0.25, Rotation2d.fromDegrees(45)), "frontLeft", false);
-    m_frontRight.setDesiredState(new SwerveModuleState(0.25, Rotation2d.fromDegrees(135)), "frontRight", false);
+  public void execute_auto() {
+
   }
-  */
 
   private static ChassisSpeeds correctForDynamics(ChassisSpeeds originalSpeeds) {
         final double LOOP_TIME_S = 0.02;
@@ -126,21 +118,6 @@ public class Drivetrain {
     //SwerveModuleState[] swerveModuleStates = Constants.Swerve.swerveKinematics.toSwerveModuleStates(desiredChassisSpeeds);
     SwerveModuleState[] swerveModuleStates = m_kinematics.toSwerveModuleStates(desiredChassisSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
-
-    /*
-    var swerveModuleStates =
-        m_kinematics.toSwerveModuleStates(
-            ChassisSpeeds.discretize(
-                fieldRelative
-                    ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                        xSpeed, ySpeed, rot, m_gyro.getRotation2d())
-                    : new ChassisSpeeds(xSpeed, ySpeed, rot),
-                periodSeconds));
-    SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
-    */
-
-    //System.out.println(">>>>>> SwerveModuleState (frontLeft): " + swerveModuleStates[0] +"\r\n");
-    //System.out.println(">>>>>> SwerveModuleState (frontRight): " + swerveModuleStates[1] +"\r\n");
 
     m_frontLeft.setDesiredState(swerveModuleStates[0], "frontLeft", true);
     m_frontRight.setDesiredState(swerveModuleStates[1], "frontRight", true);
