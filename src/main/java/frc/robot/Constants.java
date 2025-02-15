@@ -23,6 +23,35 @@ import frc.lib.util.swerveUtil.SwerveInstances;
 public final class Constants {
     public static final double stickDeadband = 0.05;
 
+    public static final Mechanism2d sideRobotView = new Mechanism2d(ArmConstants.kArmLength * 2,
+            ElevatorConstants.kMaxElevatorHeight.in(
+                    Meters) +
+                    ArmConstants.kArmLength);
+
+    public static final MechanismRoot2d kElevatorCarriage;
+    public static final MechanismLigament2d kArmMech;
+    public static final MechanismLigament2d kElevatorTower;
+
+    static {
+        kElevatorCarriage = Constants.sideRobotView.getRoot("ElevatorCarriage",
+                ArmConstants.kArmLength,
+                ElevatorConstants.kStartingHeightSim.in(
+                        Meters));
+        kArmMech = kElevatorCarriage.append(
+                new MechanismLigament2d(
+                        "Arm",
+                        ArmConstants.kArmLength,
+                        ArmConstants.kArmStartingAngle.in(Degrees),
+                        6,
+                        new Color8Bit(Color.kYellow)));
+        kElevatorTower = kElevatorCarriage.append(new MechanismLigament2d(
+                "Elevator",
+                ElevatorConstants.kStartingHeightSim.in(Meters),
+                -90,
+                6,
+                new Color8Bit(Color.kRed)));
+    }
+
     public static final class Swerve {
 
         // Max Output Powers
@@ -44,6 +73,9 @@ public final class Constants {
         // the number of degrees that a single rotation of the turn motor turns the
         // wheel.
         public static final double DegreesPerTurnRotation = 360 / angleGearRatio;
+        // the number of degrees that a single rotation of the turn motor turns the
+        // wheel.
+        public static final double DegreesPerTurnRotation = 360 / angleGearRatio;
         /* Module Gear Ratios */
         public static final double driveGearRatio = chosenModule.driveGearRatio;
 
@@ -52,9 +84,21 @@ public final class Constants {
         public static final double wheelCircumference = chosenModule.wheelCircumference;
         public static final double driveRevToMeters = wheelCircumference / (driveGearRatio);
         public static final double driveRpmToMetersPerSecond = driveRevToMeters / 60;
+        public static final double driveRevToMeters = wheelCircumference / (driveGearRatio);
+        public static final double driveRpmToMetersPerSecond = driveRevToMeters / 60;
         /* Drivetrain Constants */
         public static final double trackWidth = Units.inchesToMeters(23.75);
         public static final double wheelBase = Units.inchesToMeters(23.75);
+        /*
+         * Swerve Kinematics
+         * No need to ever change this unless you are not doing a traditional
+         * rectangular/square 4 module swerve
+         */
+        public static final SwerveDriveKinematics swerveKinematics = new SwerveDriveKinematics(
+                new Translation2d(wheelBase / 2.0, trackWidth / 2.0),
+                new Translation2d(wheelBase / 2.0, -trackWidth / 2.0),
+                new Translation2d(-wheelBase / 2.0, trackWidth / 2.0),
+                new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0));
         /*
          * Swerve Kinematics
          * No need to ever change this unless you are not doing a traditional
@@ -81,8 +125,11 @@ public final class Constants {
         public static final double angleKFF = 0;
 
         /* Drive Motor info */
+        /* Drive Motor info */
         public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
 
+        public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps * wheelCircumference)
+                / driveGearRatio;
         public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps * wheelCircumference)
                 / driveGearRatio;
 
@@ -100,9 +147,12 @@ public final class Constants {
         /* CanCoder Constants */
         // public static final CANCoderConfiguration swerveCANcoderConfig = new
         // CANCoderConfiguration();
+        // public static final CANCoderConfiguration swerveCANcoderConfig = new
+        // CANCoderConfiguration();
 
         public static class Modules {
             /* Module Specific Constants */
+            /* Front Left Module - Module 0 */
             /* Front Left Module - Module 0 */
             public static final class Mod0 {
 
