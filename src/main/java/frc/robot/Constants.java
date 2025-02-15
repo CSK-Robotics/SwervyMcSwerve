@@ -150,28 +150,25 @@ public final class Constants {
         public static final double kFreeSpeedRpm = 5676;
     }
 
-    public static final class AutonomousPosition {
-        public static final class LeftPosition {
-            public static int desiredAprilTag = 1;
-            public static int pipelineID = 1;
-            public static String starterPathPlanner = "";
-            public static float areaAprilTag = 500;
-        }
+    public class AutonomousData {
+        public int desiredAprilTag;
+        public int pipelineID;
+        public String starterPathPlanner;
+        public double areaAprilTag;
+        public double direction;
 
-        public static final class RightPosition {
-            public static int desiredAprilTag = 2;
-            public static int pipelineID = 2;
-            public static String starterPathPlanner = "";
-            public static float areaAprilTag = 500;
-        }
-
-        public static final class CenterPosition {
-            public static int desiredAprilTag = 3;
-            public static int pipelineID = 3;
-            public static String starterPathPlanner = "";
-            public static float areaAprilTag = 500;
+        public AutonomousData(int desiredAprilTag, int pipelineID, String starterPathPlanner, double areaAprilTag, double direction) {
+            this.desiredAprilTag = desiredAprilTag;
+            this.pipelineID = pipelineID;
+            this.starterPathPlanner = starterPathPlanner;
+            this.areaAprilTag = areaAprilTag;
+            this.direction = direction;
         }
     }
+
+    public AutonomousData LeftPosition = new AutonomousData(1,1,"",500.0,1.0);
+    public AutonomousData RightPosition = new AutonomousData(2,2,"",500.0,1.0);
+    public AutonomousData TopPosition = new AutonomousData(3,3,"",500.0,1.0);
 
     public static final class AutoMotorConstants {
         public static final double kMaxSpeedMetersPerSecond = 2;
