@@ -17,11 +17,17 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.math.GeometryUtils;
 import frc.lib.util.swerveUtil.RevSwerveModuleConstants;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
 /** Represents a swerve drive style drivetrain. */
-public class Drivetrain {
+public class Drivetrain extends SubsystemBase {
   public static final double kMaxSpeed = 3.0; // 3 meters per second
   public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
 
@@ -58,15 +64,41 @@ public class Drivetrain {
 
   public Drivetrain() {
     m_gyro.reset();
-    //m_frontLeft.synchronizeEncoders();
   }
 
-  /*
-  public void wheelsIn() {
-    m_frontLeft.setDesiredState(new SwerveModuleState(0.25, Rotation2d.fromDegrees(45)), "frontLeft", false);
-    m_frontRight.setDesiredState(new SwerveModuleState(0.25, Rotation2d.fromDegrees(135)), "frontRight", false);
+  public void setupAutonomousConfigure() {
+    try{
+      Constants.pathplannerConfig = RobotConfig.fromGUISettings();
+    } catch (Exception e) {
+      // Handle exception as needed
+      e.printStackTrace();
+    }
+
+    // Configure AutoBuilder last
+    AutoBuilder.configure(
+            this::getPose, // Robot pose supplier
+            this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
+            this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+            new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
+                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                    new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+            ),
+            Constants.pathplannerConfig, // The robot configuration
+            () -> {
+              // Boolean supplier that controls when the path will be mirrored for the red alliance
+              // This will flip the path being followed to the red side of the field.
+              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+              var alliance = DriverStation.getAlliance();
+              if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Red;
+              }
+              return false;
+            },
+            this // Reference to this subsystem to set requirements
+    );
   }
-  */
 
   private static ChassisSpeeds correctForDynamics(ChassisSpeeds originalSpeeds) {
         final double LOOP_TIME_S = 0.02;
@@ -118,10 +150,6 @@ public class Drivetrain {
 
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
 
-    //System.out.println(">>>>>> SwerveModuleState (frontLeft): " + swerveModuleStates[0] +"\r\n");
-    //System.out.println(">>>>>> SwerveModuleState (frontRight): " + swerveModuleStates[1] +"\r\n");
-
-  
     m_frontLeft.setDesiredState(swerveModuleStates[0], "frontLeft", true);
     m_frontRight.setDesiredState(swerveModuleStates[1], "frontRight", true);
     m_backLeft.setDesiredState(swerveModuleStates[2], "backLeft", true);
@@ -129,11 +157,23 @@ public class Drivetrain {
     
   }
 
-  public void realignWheels() throws InterruptedException {
-    m_frontLeft.synchronizeEncoders();
-    m_frontRight.synchronizeEncoders();
-    m_backLeft.synchronizeEncoders();
-    m_backRight.synchronizeEncoders();
+  public Pose2d getPose(){
+    return m_odometry.getPoseMeters();
+  }
+
+  public void resetPose(Pose2d consumerPose) {
+    m_odometry.resetPose(consumerPose);
+  }
+
+  public ChassisSpeeds getRobotRelativeSpeeds(){
+    return m_kinematics.toChassisSpeeds(m_frontLeft.getState(),
+                                                           m_frontRight.getState(),
+                                                           m_backLeft.getState(),
+                                                           m_backRight.getState());
+  }
+
+  public void driveRobotRelative(ChassisSpeeds speeds){
+    this.drive(speeds.vxMetersPerSecond,speeds.vyMetersPerSecond,speeds.omegaRadiansPerSecond,false, 1.0);
   }
 
   /** Updates the field relative position of the robot. */
@@ -143,9 +183,6 @@ public class Drivetrain {
     var posData_m_backLeft = m_backLeft.getPosition();
     var posData_m_backRight = m_backRight.getPosition();
 
-    //System.out.println(">>>>>> CANCoder Position (frontLeft): " + posData_m_frontLeft.toString() + "\r\n");
-    //System.out.println(">>>>>> CANCoder Position (frontRight): " + posData_m_frontRight.toString() + "\r\n");
-    
     m_odometry.update(
         m_gyro.getRotation2d(),
         new SwerveModulePosition[] {

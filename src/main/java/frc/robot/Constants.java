@@ -1,6 +1,7 @@
 package frc.robot;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.pathplanner.lib.config.RobotConfig;
 import com.revrobotics.spark.SparkFlex;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -15,11 +16,6 @@ public final class Constants {
 
 
     public static final class Swerve {
-
-        // Spark Max Idle Modes
-        // public static final SparkFlex.IdleMode driveIdleMode = CANSparkMax.IdleMode.kBrake;
-        // public static final SparkFlex.IdleMode angleIdleMode = CANSparkMax.IdleMode.kBrake;
-
         // Max Output Powers
         public static final double drivePower = 1;
         public static final double anglePower = .9;
@@ -86,11 +82,8 @@ public final class Constants {
         public static final double maxAngularVelocity = 5.0;
         public static double angleRampRate = 0;
 
-        /* CanCoder Constants */
-        //public static final CANCoderConfiguration swerveCANcoderConfig = new CANCoderConfiguration();
-
         public static class Modules {
-            /* Module Specific Constants */
+        /* Module Specific Constants */
         /* Front Left Module - Module 0 */
             public static final class Mod0 {
 
@@ -174,5 +167,53 @@ public final class Constants {
 
     public static final class NeoMotorConstants {
         public static final double kFreeSpeedRpm = 5676;
+    }
+
+    // Load the RobotConfig from the GUI settings. You should probably
+    // store this in your Constants file
+    public static RobotConfig pathplannerConfig;
+    public class AutonomousData {
+        public int desiredAprilTag;
+        public int pipelineID;
+        public String starterPathPlanner;
+        public double areaAprilTag;
+        public double direction;
+
+        public AutonomousData(int desiredAprilTag, int pipelineID, String starterPathPlanner, double areaAprilTag, double direction) {
+            this.desiredAprilTag = desiredAprilTag;
+            this.pipelineID = pipelineID;
+            this.starterPathPlanner = starterPathPlanner;
+            this.areaAprilTag = areaAprilTag;
+            this.direction = direction;
+        }
+    }
+
+    public AutonomousData LeftPosition = new AutonomousData(1,1,"",500.0,1.0);
+    public AutonomousData RightPosition = new AutonomousData(2,2,"",500.0,1.0);
+    public AutonomousData TopPosition = new AutonomousData(3,3,"",500.0,1.0);
+
+    public static final class AutoMotorConstants {
+        public static final double kMaxSpeedMetersPerSecond = 2;
+        public static final double kMaxAccelerationMetersPerSecondSquared = 1;
+        public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI * 16;
+        public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI * 16;
+
+        public static final double X_kP = 5;
+        public static final double X_kI = 0;
+        public static final double X_kD = 0;
+
+        public static final double Y_kP = 5;
+        public static final double Y_kI = 0;
+        public static final double Y_kD = 0;
+
+        public static final double THETA_kP = 6.2;
+        public static final double THETA_kI = 0;
+        public static final double THETA_kD = 0;
+
+
+        // Motion profilied robot angle controller
+        public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
+                new TrapezoidProfile.Constraints(kMaxAngularSpeedRadiansPerSecond,
+                        kMaxAngularSpeedRadiansPerSecondSquared);
     }
 }
