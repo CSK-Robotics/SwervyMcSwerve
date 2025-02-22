@@ -1,10 +1,14 @@
 package frc.robot;
 
+import com.pathplanner.lib.config.RobotConfig;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 
 import au.grapplerobotics.interfaces.LaserCanInterface.RegionOfInterest;
-import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
@@ -84,6 +88,29 @@ public final class Constants {
         public static final String CAMERA_NAME = "CSI";
         public static final double LARGEST_DISTANCE = 0.1;
     }
+
+    // Load the RobotConfig from the GUI settings. You should probably
+    // store this in your Constants file
+    public static RobotConfig pathplannerConfig;
+    public class AutonomousData {
+        public int desiredAprilTag;
+        public int pipelineID;
+        public String starterPathPlanner;
+        public double areaAprilTag;
+        public double direction;
+
+        public AutonomousData(int desiredAprilTag, int pipelineID, String starterPathPlanner, double areaAprilTag, double direction) {
+            this.desiredAprilTag = desiredAprilTag;
+            this.pipelineID = pipelineID;
+            this.starterPathPlanner = starterPathPlanner;
+            this.areaAprilTag = areaAprilTag;
+            this.direction = direction;
+        }
+    }
+
+    public AutonomousData LeftPosition = new AutonomousData(1,1,"",500.0,1.0);
+    public AutonomousData RightPosition = new AutonomousData(2,2,"",500.0,1.0);
+    public AutonomousData TopPosition = new AutonomousData(3,3,"",500.0,1.0);
 
     public static final class AutoConstants {
         public static final double kMaxSpeedMetersPerSecond = 2;
@@ -256,6 +283,6 @@ public final class Constants {
                                     kAlgaeDetectTolerance, kROI)));
         }
 
-        public static final CoralConstants instance = new CoralConstants();
+        public static final AlgaeConstants instance = new AlgaeConstants();
     }
 }

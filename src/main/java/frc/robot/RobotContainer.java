@@ -11,7 +11,8 @@ import frc.robot.Subsystems.DrivetrainSubsystem;
 import frc.robot.Subsystems.ElevatorSubsystem;
 
 public class RobotContainer {
-  private final Orchestrator orchestrator = new Orchestrator(new DrivetrainSubsystem(), new ElevatorSubsystem(),
+  private final DrivetrainSubsystem m_swerve = new DrivetrainSubsystem();
+  private final Orchestrator orchestrator = new Orchestrator(m_swerve, new ElevatorSubsystem(),
       new CoralSubsystem(), new AlgaeSubsystem(), new ClimberSubsystem());
   private final DriverControls driver = new DriverControls(orchestrator);
   private final OperatorControls operator = new OperatorControls(orchestrator);
@@ -23,5 +24,9 @@ public class RobotContainer {
   public void pollControllers() {
     driver.m_loop.poll();
     operator.m_loop.poll();
+  }
+
+  public void configureAutonomous() {
+    m_swerve.setupAutonomousConfigure();
   }
 }
