@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -50,6 +51,8 @@ public class Drivetrain extends SubsystemBase {
           m_backLeftLocation,
           m_backRightLocation
         );
+
+  //private final SwerveDrivePoseEstimator m_odometry; 
 
   private final SwerveDriveOdometry m_odometry =
       new SwerveDriveOdometry(
@@ -159,6 +162,16 @@ public class Drivetrain extends SubsystemBase {
 
   public Pose2d getPose(){
     return m_odometry.getPoseMeters();
+  }
+
+  public LimelightHelpers.PoseEstimate getLimelightPose() {
+    // First, tell Limelight your robot's current orientation
+    double robotYaw = m_gyro.getAngle();  
+    LimelightHelpers.SetRobotOrientation("", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+
+    // Get the pose estimate
+    LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("");
+    return limelightMeasurement;
   }
 
   public void resetPose(Pose2d consumerPose) {
