@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 public class Robot extends TimedRobot {
@@ -25,13 +26,17 @@ public class Robot extends TimedRobot {
   private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
   private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(3);
   private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(3);
+  private Command m_autonomousCommand;
+
+  @Override
+  public void autonomousInit() {
+    m_swerve.setupAutonomousConfigure();
+    m_autonomousCommand = getAutonomousCommand();
+  }
 
   @Override
   public void autonomousPeriodic() {
     //m_swerve.updateOdometry();
-    m_swerve.setupAutonomousConfigure();
-    var m_autonomousCommand = getAutonomousCommand();
-    
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
@@ -46,6 +51,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     m_swerve.updateOdometry();
+    CommandScheduler.getInstance().run();
   }
 
   private void driveWithJoystick(boolean fieldRelative) {

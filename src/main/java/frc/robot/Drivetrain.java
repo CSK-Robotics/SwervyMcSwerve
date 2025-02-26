@@ -70,6 +70,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void setupAutonomousConfigure() {
+    System.out.println("Configuring autobuilder...");
     try{
       Constants.pathplannerConfig = RobotConfig.fromGUISettings();
     } catch (Exception e) {
