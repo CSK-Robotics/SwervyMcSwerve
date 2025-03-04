@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot;
+package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -11,28 +11,29 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.AnalogGyro;
+import frc.robot.Constants.Swerve;
 
 /** Represents a swerve drive style drivetrain. */
 public class Drivetrain {
   public static final double kMaxSpeed = 3.0; // 3 meters per second
   public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
 
-  private final Translation2d m_frontLeftLocation = new Translation2d(Constants.Swerve.wheelBase / 2.0,
-      Constants.Swerve.trackWidth / 2.0);
-  private final Translation2d m_frontRightLocation = new Translation2d(Constants.Swerve.wheelBase / 2.0,
-      -Constants.Swerve.trackWidth / 2.0);
-  private final Translation2d m_backLeftLocation = new Translation2d(-Constants.Swerve.wheelBase / 2.0,
-      Constants.Swerve.trackWidth / 2.0);
-  private final Translation2d m_backRightLocation = new Translation2d(-Constants.Swerve.wheelBase / 2.0,
-      -Constants.Swerve.trackWidth / 2.0);
+  private final Translation2d m_frontLeftLocation = new Translation2d(Swerve.wheelBase / 2.0,
+      Swerve.trackWidth / 2.0);
+  private final Translation2d m_frontRightLocation = new Translation2d(Swerve.wheelBase / 2.0,
+      -Swerve.trackWidth / 2.0);
+  private final Translation2d m_backLeftLocation = new Translation2d(-Swerve.wheelBase / 2.0,
+      Swerve.trackWidth / 2.0);
+  private final Translation2d m_backRightLocation = new Translation2d(-Swerve.wheelBase / 2.0,
+      -Swerve.trackWidth / 2.0);
 
-  private final SwerveModule m_frontLeft = new SwerveModule(8, 7, 9, Constants.Swerve.Modules.Mod0.constants,
+  private final SwerveModule m_frontLeft = new SwerveModule(8, 7, 9, Swerve.Modules.Mod0.constants,
       "m_frontLeft", false);
-  private final SwerveModule m_frontRight = new SwerveModule(2, 1, 10, Constants.Swerve.Modules.Mod1.constants,
+  private final SwerveModule m_frontRight = new SwerveModule(2, 1, 10, Swerve.Modules.Mod1.constants,
       "m_frontRight", true);
-  private final SwerveModule m_backLeft = new SwerveModule(4, 3, 11, Constants.Swerve.Modules.Mod2.constants,
+  private final SwerveModule m_backLeft = new SwerveModule(4, 3, 11, Swerve.Modules.Mod2.constants,
       "m_backLeft", false);
-  private final SwerveModule m_backRight = new SwerveModule(5, 6, 12, Constants.Swerve.Modules.Mod3.constants,
+  private final SwerveModule m_backRight = new SwerveModule(5, 6, 12, Swerve.Modules.Mod3.constants,
       "m_backRight", true);
 
   private final AnalogGyro m_gyro = new AnalogGyro(0);
@@ -84,7 +85,7 @@ public class Drivetrain {
       swerveModuleState.angle = swerveModuleState.angle.times(-1);
     }
 
-    SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
+    SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Swerve.maxSpeed);
 
     // System.out.println(">>>>>> SwerveModuleState (frontLeft): " +
     // swerveModuleStates[0] +"\r\n");

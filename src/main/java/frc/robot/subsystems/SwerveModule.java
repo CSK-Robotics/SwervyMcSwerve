@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot;
+package frc.robot.subsystems;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -21,6 +21,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.measure.Angle;
 import frc.lib.util.swerveUtil.CTREModuleState;
 import frc.lib.util.swerveUtil.RevSwerveModuleConstants;
+import frc.robot.Constants.Swerve;
 
 public class SwerveModule {
 
@@ -62,23 +63,23 @@ public class SwerveModule {
         m_turningMotor = new SparkFlex(turningMotorChannel, MotorType.kBrushless);
 
         SparkFlexConfig config_m_drivingMotor = new SparkFlexConfig();
-        config_m_drivingMotor.encoder.positionConversionFactor(Constants.Swerve.driveRevToMeters);
-        config_m_drivingMotor.encoder.velocityConversionFactor(Constants.Swerve.driveRpmToMetersPerSecond);
-        config_m_drivingMotor.closedLoop.p(Constants.Swerve.driveKP);
-        config_m_drivingMotor.closedLoop.i(Constants.Swerve.driveKI);
-        config_m_drivingMotor.closedLoop.d(Constants.Swerve.driveKD);
+        config_m_drivingMotor.encoder.positionConversionFactor(Swerve.driveRevToMeters);
+        config_m_drivingMotor.encoder.velocityConversionFactor(Swerve.driveRpmToMetersPerSecond);
+        config_m_drivingMotor.closedLoop.p(Swerve.driveKP);
+        config_m_drivingMotor.closedLoop.i(Swerve.driveKI);
+        config_m_drivingMotor.closedLoop.d(Swerve.driveKD);
         config_m_drivingMotor.closedLoop.velocityFF(1 / 565); // Kv=565 for NEO Vortex (look up on website)
         config_m_drivingMotor.inverted(invert);
 
         SparkFlexConfig config_m_turningMotor = new SparkFlexConfig();
-        config_m_turningMotor.encoder.positionConversionFactor(Constants.Swerve.DegreesPerTurnRotation);
-        config_m_turningMotor.encoder.velocityConversionFactor(Constants.Swerve.DegreesPerTurnRotation / 60);
-        config_m_turningMotor.closedLoop.p(Constants.Swerve.angleKP);
-        config_m_turningMotor.closedLoop.i(Constants.Swerve.angleKI);
-        config_m_turningMotor.closedLoop.d(Constants.Swerve.angleKD);
-        config_m_turningMotor.closedLoop.outputRange(-Constants.Swerve.anglePower, Constants.Swerve.anglePower);
-        config_m_turningMotor.closedLoopRampRate(Constants.Swerve.angleRampRate);
-        config_m_turningMotor.smartCurrentLimit(Constants.Swerve.angleContinuousCurrentLimit);
+        config_m_turningMotor.encoder.positionConversionFactor(Swerve.DegreesPerTurnRotation);
+        config_m_turningMotor.encoder.velocityConversionFactor(Swerve.DegreesPerTurnRotation / 60);
+        config_m_turningMotor.closedLoop.p(Swerve.angleKP);
+        config_m_turningMotor.closedLoop.i(Swerve.angleKI);
+        config_m_turningMotor.closedLoop.d(Swerve.angleKD);
+        config_m_turningMotor.closedLoop.outputRange(-Swerve.anglePower, Swerve.anglePower);
+        config_m_turningMotor.closedLoopRampRate(Swerve.angleRampRate);
+        config_m_turningMotor.smartCurrentLimit(Swerve.angleContinuousCurrentLimit);
 
         // Encoders inside the motor are configured and initial positions are set
         m_driveMotor.configure(config_m_drivingMotor, SparkBase.ResetMode.kResetSafeParameters, null);
