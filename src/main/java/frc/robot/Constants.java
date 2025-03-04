@@ -10,257 +10,235 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Second;
-// import frc.lib.util.swerveUtil.COTSFalconSwerveConstants;
 import frc.lib.util.swerveUtil.RevSwerveModuleConstants;
 import frc.lib.util.swerveUtil.SwerveInstances;
 
 public final class Constants {
-    public static final double stickDeadband = 0.05;
+        public static final double stickDeadband = 0.05;
 
-    public static final Mechanism2d sideRobotView = new Mechanism2d(ArmConstants.kArmLength * 2,
-            ElevatorConstants.kMaxElevatorHeight.in(
-                    Meters) +
-                    ArmConstants.kArmLength);
+        public static final Mechanism2d sideRobotView = new Mechanism2d(0.0, 0.0 /* canvas size */);
 
-    public static final MechanismRoot2d kElevatorCarriage;
-    public static final MechanismLigament2d kArmMech;
-    public static final MechanismLigament2d kElevatorTower;
-
-    static {
-        kElevatorCarriage = Constants.sideRobotView.getRoot("ElevatorCarriage",
-                ArmConstants.kArmLength,
-                ElevatorConstants.kStartingHeightSim.in(
-                        Meters));
-        kArmMech = kElevatorCarriage.append(
-                new MechanismLigament2d(
-                        "Arm",
-                        ArmConstants.kArmLength,
-                        ArmConstants.kArmStartingAngle.in(Degrees),
+        public static MechanismRoot2d kElevatorTower = Constants.sideRobotView.getRoot("Elevator Base",
+                        0.0, // Elevator position on chassis
+                        0.0);
+        public static MechanismLigament2d kElevatorCenterStage = kElevatorTower.append(new MechanismLigament2d(
+                        "Elevator Intermediate Stage", 36.0, -90.0, 6.0, new Color8Bit(Color.kRed)));
+        public static MechanismLigament2d kElevatorCarriage = kElevatorCenterStage.append(new MechanismLigament2d(
+                        "Elevator",
+                        8.0, // carriage height
+                        -90,
                         6,
-                        new Color8Bit(Color.kYellow)));
-        kElevatorTower = kElevatorCarriage.append(new MechanismLigament2d(
-                "Elevator",
-                ElevatorConstants.kStartingHeightSim.in(Meters),
-                -90,
-                6,
-                new Color8Bit(Color.kRed)));
-    }
+                        new Color8Bit(Color.kRed)));
+        public static MechanismLigament2d kArmMech = kElevatorCarriage.append(
+                        new MechanismLigament2d(
+                                        "Arm",
+                                        0.0, // ArmConstants.kArmLength,
+                                        0.0, // ArmConstants.kArmStartingAngle.in(Degrees),
+                                        6,
+                                        new Color8Bit(Color.kYellow)));
 
-    public static final class Swerve {
+        public static final class Swerve {
 
-        // Max Output Powers
-        public static final double drivePower = 1;
-        public static final double anglePower = .9;
+                // Max Output Powers
+                public static final double drivePower = 1;
+                public static final double anglePower = .9;
 
-        // Gyro
-        public static final boolean invertGyro = false; // Always ensure Gyro is CCW+ CW-
+                // Gyro
+                public static final boolean invertGyro = false; // Always ensure Gyro is CCW+ CW-
 
-        // Swerve Module Type
-        public static final SwerveInstances chosenModule = SwerveInstances
-                .SDSMK4i(SwerveInstances.driveGearRatios.SDSMK4i_L2);
-        /* Angle Encoder Invert */
-        public static final boolean canCoderInvert = chosenModule.canCoderInvert;
-        public static final boolean driveMotorInvert = chosenModule.driveMotorInvert;
-        /* Motor Inverts */
-        public static final boolean angleMotorInvert = chosenModule.angleMotorInvert;
-        public static final double angleGearRatio = chosenModule.angleGearRatio;
-        // the number of degrees that a single rotation of the turn motor turns the
-        // wheel.
-        public static final double DegreesPerTurnRotation = 360 / angleGearRatio;
-        // the number of degrees that a single rotation of the turn motor turns the
-        // wheel.
-        public static final double DegreesPerTurnRotation = 360 / angleGearRatio;
-        /* Module Gear Ratios */
-        public static final double driveGearRatio = chosenModule.driveGearRatio;
+                // Swerve Module Type
+                public static final SwerveInstances chosenModule = SwerveInstances
+                                .SDSMK4i(SwerveInstances.driveGearRatios.SDSMK4i_L2);
+                /* Angle Encoder Invert */
+                public static final boolean canCoderInvert = chosenModule.canCoderInvert;
+                public static final boolean driveMotorInvert = chosenModule.driveMotorInvert;
+                /* Motor Inverts */
+                public static final boolean angleMotorInvert = chosenModule.angleMotorInvert;
+                public static final double angleGearRatio = chosenModule.angleGearRatio;
+                // the number of degrees that a single rotation of the turn motor turns the
+                // wheel.
+                public static final double DegreesPerTurnRotation = 360 / angleGearRatio;
+                /* Module Gear Ratios */
+                public static final double driveGearRatio = chosenModule.driveGearRatio;
 
-        // encoder setup
-        // meters per rotation
-        public static final double wheelCircumference = chosenModule.wheelCircumference;
-        public static final double driveRevToMeters = wheelCircumference / (driveGearRatio);
-        public static final double driveRpmToMetersPerSecond = driveRevToMeters / 60;
-        public static final double driveRevToMeters = wheelCircumference / (driveGearRatio);
-        public static final double driveRpmToMetersPerSecond = driveRevToMeters / 60;
-        /* Drivetrain Constants */
-        public static final double trackWidth = Units.inchesToMeters(23.75);
-        public static final double wheelBase = Units.inchesToMeters(23.75);
-        /*
-         * Swerve Kinematics
-         * No need to ever change this unless you are not doing a traditional
-         * rectangular/square 4 module swerve
-         */
-        public static final SwerveDriveKinematics swerveKinematics = new SwerveDriveKinematics(
-                new Translation2d(wheelBase / 2.0, trackWidth / 2.0),
-                new Translation2d(wheelBase / 2.0, -trackWidth / 2.0),
-                new Translation2d(-wheelBase / 2.0, trackWidth / 2.0),
-                new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0));
-        /*
-         * Swerve Kinematics
-         * No need to ever change this unless you are not doing a traditional
-         * rectangular/square 4 module swerve
-         */
-        public static final SwerveDriveKinematics swerveKinematics = new SwerveDriveKinematics(
-                new Translation2d(wheelBase / 2.0, trackWidth / 2.0),
-                new Translation2d(wheelBase / 2.0, -trackWidth / 2.0),
-                new Translation2d(-wheelBase / 2.0, trackWidth / 2.0),
-                new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0));
-        /* Swerve Current Limiting */
-        public static final int angleContinuousCurrentLimit = 20;
-        public static final int anglePeakCurrentLimit = 40;
-        public static final double anglePeakCurrentDuration = 0.1;
-        public static final boolean angleEnableCurrentLimit = true;
-        public static final int driveContinuousCurrentLimit = 35;
-        public static final int drivePeakCurrentLimit = 60;
-        public static final double drivePeakCurrentDuration = 0.1;
-        public static final boolean driveEnableCurrentLimit = true;
-        /* Angle Motor PID Values */
-        public static final double angleKP = 0.05;
-        public static final double angleKI = 0;
-        public static final double angleKD = 0;
-        public static final double angleKFF = 0;
+                // encoder setup
+                // meters per rotation
+                public static final double wheelCircumference = chosenModule.wheelCircumference;
+                public static final double driveRevToMeters = wheelCircumference / (driveGearRatio);
+                public static final double driveRpmToMetersPerSecond = driveRevToMeters / 60;
+                /* Drivetrain Constants */
+                public static final double trackWidth = Units.inchesToMeters(23.75);
+                public static final double wheelBase = Units.inchesToMeters(23.75);
+                /*
+                 * Swerve Kinematics
+                 * No need to ever change this unless you are not doing a traditional
+                 * rectangular/square 4 module swerve
+                 */
+                public static final SwerveDriveKinematics swerveKinematics = new SwerveDriveKinematics(
+                                new Translation2d(wheelBase / 2.0, trackWidth / 2.0),
+                                new Translation2d(wheelBase / 2.0, -trackWidth / 2.0),
+                                new Translation2d(-wheelBase / 2.0, trackWidth / 2.0),
+                                new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0));
+                /* Swerve Current Limiting */
+                public static final int angleContinuousCurrentLimit = 20;
+                public static final int anglePeakCurrentLimit = 40;
+                public static final double anglePeakCurrentDuration = 0.1;
+                public static final boolean angleEnableCurrentLimit = true;
+                public static final int driveContinuousCurrentLimit = 35;
+                public static final int drivePeakCurrentLimit = 60;
+                public static final double drivePeakCurrentDuration = 0.1;
+                public static final boolean driveEnableCurrentLimit = true;
+                /* Angle Motor PID Values */
+                public static final double angleKP = 0.05;
+                public static final double angleKI = 0;
+                public static final double angleKD = 0;
+                public static final double angleKFF = 0;
 
-        /* Drive Motor info */
-        /* Drive Motor info */
-        public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
+                /* Drive Motor info */
+                /* Drive Motor info */
+                public static final double kDrivingMotorFreeSpeedRps = NeoMotorConstants.kFreeSpeedRpm / 60;
 
-        public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps * wheelCircumference)
-                / driveGearRatio;
-        public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps * wheelCircumference)
-                / driveGearRatio;
+                public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps * wheelCircumference)
+                                / driveGearRatio;
 
-        /* Drive Motor PID Values */
-        public static final double driveKP = 0.04;
-        public static final double driveKI = 0.0;
-        public static final double driveKD = 0.0;
-        public static final double driveKFF = 1 / kDriveWheelFreeSpeedRps;
-        /** Meters per Second */
-        public static final double maxSpeed = 3.6576;
-        /** Radians per Second */
-        public static final double maxAngularVelocity = 5.0;
-        public static double angleRampRate = 0;
+                /* Drive Motor PID Values */
+                public static final double driveKP = 0.04;
+                public static final double driveKI = 0.0;
+                public static final double driveKD = 0.0;
+                public static final double driveKFF = 1 / kDriveWheelFreeSpeedRps;
+                /** Meters per Second */
+                public static final double maxSpeed = 3.6576;
+                /** Radians per Second */
+                public static final double maxAngularVelocity = 5.0;
+                public static double angleRampRate = 0;
 
-        /* CanCoder Constants */
-        // public static final CANCoderConfiguration swerveCANcoderConfig = new
-        // CANCoderConfiguration();
-        // public static final CANCoderConfiguration swerveCANcoderConfig = new
-        // CANCoderConfiguration();
+                /* CanCoder Constants */
+                // public static final CANCoderConfiguration swerveCANcoderConfig = new
+                // CANCoderConfiguration();
+                // public static final CANCoderConfiguration swerveCANcoderConfig = new
+                // CANCoderConfiguration();
 
-        public static class Modules {
-            /* Module Specific Constants */
-            /* Front Left Module - Module 0 */
-            /* Front Left Module - Module 0 */
-            public static final class Mod0 {
+                public static class Modules {
+                        /* Module Specific Constants */
+                        /* Front Left Module - Module 0 */
+                        /* Front Left Module - Module 0 */
+                        public static final class Mod0 {
 
-                public static final int driveMotorID = 2;
-                public static final int angleMotorID = 3;
-                public static final int canCoderID = 10;
-                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(0);// Rotation2d.fromDegrees(37.7);
-                public static final RevSwerveModuleConstants constants = new RevSwerveModuleConstants(driveMotorID,
-                        angleMotorID, canCoderID, angleOffset);
-            }
+                                public static final int driveMotorID = 2;
+                                public static final int angleMotorID = 3;
+                                public static final int canCoderID = 10;
+                                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(0);// Rotation2d.fromDegrees(37.7);
+                                public static final RevSwerveModuleConstants constants = new RevSwerveModuleConstants(
+                                                driveMotorID,
+                                                angleMotorID, canCoderID, angleOffset);
+                        }
 
-            /* Front Right Module - Module 1 */
-            public static final class Mod1 {
-                public static final int driveMotorID = 4;
-                public static final int angleMotorID = 5;
-                public static final int canCoderID = 11;
-                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(0);
-                public static final RevSwerveModuleConstants constants = new RevSwerveModuleConstants(driveMotorID,
-                        angleMotorID, canCoderID, angleOffset);
-            }
+                        /* Front Right Module - Module 1 */
+                        public static final class Mod1 {
+                                public static final int driveMotorID = 4;
+                                public static final int angleMotorID = 5;
+                                public static final int canCoderID = 11;
+                                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(0);
+                                public static final RevSwerveModuleConstants constants = new RevSwerveModuleConstants(
+                                                driveMotorID,
+                                                angleMotorID, canCoderID, angleOffset);
+                        }
 
-            /* Back Left Module - Module 2 */
-            public static final class Mod2 {
-                public static final int driveMotorID = 6;
-                public static final int angleMotorID = 7;
-                public static final int canCoderID = 12;
-                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(0);
-                public static final RevSwerveModuleConstants constants = new RevSwerveModuleConstants(driveMotorID,
-                        angleMotorID, canCoderID, angleOffset);
-            }
+                        /* Back Left Module - Module 2 */
+                        public static final class Mod2 {
+                                public static final int driveMotorID = 6;
+                                public static final int angleMotorID = 7;
+                                public static final int canCoderID = 12;
+                                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(0);
+                                public static final RevSwerveModuleConstants constants = new RevSwerveModuleConstants(
+                                                driveMotorID,
+                                                angleMotorID, canCoderID, angleOffset);
+                        }
 
-            /* Back Right Module - Module 3 */
-            public static final class Mod3 {
-                public static final int driveMotorID = 8;
-                public static final int angleMotorID = 9;
-                public static final int canCoderID = 13;
-                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(0);
-                public static final RevSwerveModuleConstants constants = new RevSwerveModuleConstants(driveMotorID,
-                        angleMotorID, canCoderID, angleOffset);
-            }
+                        /* Back Right Module - Module 3 */
+                        public static final class Mod3 {
+                                public static final int driveMotorID = 8;
+                                public static final int angleMotorID = 9;
+                                public static final int canCoderID = 13;
+                                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(0);
+                                public static final RevSwerveModuleConstants constants = new RevSwerveModuleConstants(
+                                                driveMotorID,
+                                                angleMotorID, canCoderID, angleOffset);
+                        }
+                }
         }
-    }
 
-    public static final class CameraConstants {
+        public static final class CameraConstants {
 
-        public static final double ROLL = -Math.PI / 2;
-        public static final double PITCH = 0.0;
-        public static final double YAW = 0.0;
-        public static final Transform3d KCAMERA_TO_ROBOT = new Transform3d(
-                new Translation3d(Units.inchesToMeters(0), Units.inchesToMeters(8),
-                        Units.inchesToMeters(22.125)),
-                new Rotation3d(ROLL, PITCH, YAW)).inverse();
+                public static final double ROLL = -Math.PI / 2;
+                public static final double PITCH = 0.0;
+                public static final double YAW = 0.0;
+                public static final Transform3d KCAMERA_TO_ROBOT = new Transform3d(
+                                new Translation3d(Units.inchesToMeters(0), Units.inchesToMeters(8),
+                                                Units.inchesToMeters(22.125)),
+                                new Rotation3d(ROLL, PITCH, YAW)).inverse();
 
-        public static final String CAMERA_NAME = "CSI";
-        public static final double LARGEST_DISTANCE = 0.1;
-    }
+                public static final String CAMERA_NAME = "CSI";
+                public static final double LARGEST_DISTANCE = 0.1;
+        }
 
-    public static final class AutoConstants {
-        public static final double kMaxSpeedMetersPerSecond = 2;
-        public static final double kMaxAccelerationMetersPerSecondSquared = 1;
-        public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI * 16;
-        public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI * 16;
+        public static final class AutoConstants {
+                public static final double kMaxSpeedMetersPerSecond = 2;
+                public static final double kMaxAccelerationMetersPerSecondSquared = 1;
+                public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI * 16;
+                public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI * 16;
 
-        public static final double X_kP = 5;
-        public static final double X_kI = 0;
-        public static final double X_kD = 0;
+                public static final double X_kP = 5;
+                public static final double X_kI = 0;
+                public static final double X_kD = 0;
 
-        public static final double Y_kP = 5;
-        public static final double Y_kI = 0;
-        public static final double Y_kD = 0;
+                public static final double Y_kP = 5;
+                public static final double Y_kI = 0;
+                public static final double Y_kD = 0;
 
-        public static final double THETA_kP = 6.2;
-        public static final double THETA_kI = 0;
-        public static final double THETA_kD = 0;
+                public static final double THETA_kP = 6.2;
+                public static final double THETA_kI = 0;
+                public static final double THETA_kD = 0;
 
-        // Motion profilied robot angle controller
-        public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(
-                kMaxAngularSpeedRadiansPerSecond,
-                kMaxAngularSpeedRadiansPerSecondSquared);
-    }
+                // Motion profilied robot angle controller
+                public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(
+                                kMaxAngularSpeedRadiansPerSecond,
+                                kMaxAngularSpeedRadiansPerSecondSquared);
+        }
 
-    public static final class NeoMotorConstants {
-        public static final double kFreeSpeedRpm = 5676;
-    }
+        public static final class NeoMotorConstants {
+                public static final double kFreeSpeedRpm = 5676;
+        }
 
-    public static class ElevatorConstants {
-        public static final double kElevatorKp = 26.722;
-        public static final double kElevatorKi = 0;
-        public static final double kElevatorKd = 1.6047;
+        public static class ElevatorConstants {
+                public static final double kElevatorKp = 26.722;
+                public static final double kElevatorKi = 0;
+                public static final double kElevatorKd = 1.6047;
 
-        public static final double kElevatorkS = 0.01964; // volts (V)
-        public static final double kElevatorkV = 3.894; // volt per velocity (V/(m/s))
-        public static final double kElevatorkA = 0.173; // volt per acceleration (V/(m/s²))
-        public static final double kElevatorkG = 0.91274; // volts (V)
+                public static final double kElevatorkS = 0.01964; // volts (V)
+                public static final double kElevatorkV = 3.894; // volt per velocity (V/(m/s))
+                public static final double kElevatorkA = 0.173; // volt per acceleration (V/(m/s²))
+                public static final double kElevatorkG = 0.91274; // volts (V)
 
-        public static final double kElevatorGearing = 10.0;
-        public static final double kElevatorDrumRadius = Units.inchesToMeters(2.0);
-        public static final double kCarriageMass = 4.0; // kg
+                public static final double kElevatorGearing = 10.0;
+                public static final double kElevatorDrumRadius = Units.inchesToMeters(2.0);
+                public static final double kCarriageMass = 4.0; // kg
 
-        // Encoder is reset to measure 0 at the bottom, so minimum height is 0.
-        public static final Distance kLaserCANOffset = Inches.of(3);
-        public static final Distance kStartingHeightSim = Meters.of(0);
-        public static final Distance kMinElevatorHeight = Meters.of(0.0);
-        public static final Distance kMaxElevatorHeight = Meters.of(10.25);
+                // Encoder is reset to measure 0 at the bottom, so minimum height is 0.
+                public static final Distance kLaserCANOffset = Inches.of(3);
+                public static final Distance kStartingHeightSim = Meters.of(0);
+                public static final Distance kMinElevatorHeight = Meters.of(0.0);
+                public static final Distance kMaxElevatorHeight = Meters.of(10.25);
 
-        public static double kElevatorRampRate = 0.1;
-        public static int kElevatorCurrentLimit = 40;
-        public static double kMaxVelocity = Meters.of(4).per(Second).in(MetersPerSecond);
-        public static double kMaxAcceleration = Meters.of(8).per(Second).per(Second).in(MetersPerSecondPerSecond);
-    }
+                public static double kElevatorRampRate = 0.1;
+                public static int kElevatorCurrentLimit = 40;
+                public static double kMaxVelocity = Meters.of(4).per(Second).in(MetersPerSecond);
+                public static double kMaxAcceleration = Meters.of(8).per(Second).per(Second)
+                                .in(MetersPerSecondPerSecond);
+        }
 }
