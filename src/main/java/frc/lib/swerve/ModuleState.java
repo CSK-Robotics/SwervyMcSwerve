@@ -1,9 +1,9 @@
-package frc.lib.util.swerveUtil;
+package frc.lib.swerve;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 
-public class CTREModuleState {
+public class ModuleState {
 
     /**
      * Minimize the change in heading the desired swerve module state would require

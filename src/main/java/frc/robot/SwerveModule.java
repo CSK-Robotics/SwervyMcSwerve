@@ -19,15 +19,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.measure.Angle;
-import frc.lib.util.swerveUtil.CTREModuleState;
-import frc.lib.util.swerveUtil.RevSwerveModuleConstants;
+import frc.lib.swerve.ModuleState;
+import frc.robot.Constants.Swerve;
+import frc.lib.swerve.ModuleConstants;
 
 public class SwerveModule {
-
-    // TODO: Remove these constants:
-    ////////////////////////////////////////////
-    private static final double sparkFlexMaxSpeed = 3.6576;
-    ////////////////////////////////////////////
     private String moduleName;
     public SwerveModuleState desiredState;
 
@@ -38,7 +34,6 @@ public class SwerveModule {
     private final RelativeEncoder rel_angleEncoder;
 
     private final CANcoder m_turningEncoder;
-    private final RevSwerveModuleConstants constants;
 
     /**
      * Constructs a SwerveModule with a drive motor, turning motor, drive encoder
@@ -49,36 +44,25 @@ public class SwerveModule {
      * @param turningEncoderCANID CAN ID associated with CTR-E CANCoder
      */
     public SwerveModule(
-            int driveMotorChannel,
-            int turningMotorChannel,
-            int turningEncoderCANID,
-            RevSwerveModuleConstants constants,
-            String name,
-            Boolean invert) {
-
-        this.constants = constants; // NOTE: is this right?? idk
+            ModuleConstants constants,
+            String name) {
         this.moduleName = name;
-        m_driveMotor = new SparkFlex(driveMotorChannel, MotorType.kBrushless);
-        m_turningMotor = new SparkFlex(turningMotorChannel, MotorType.kBrushless);
+        m_driveMotor = new SparkFlex(constants.driveMotorID, MotorType.kBrushless);
+        m_turningMotor = new SparkFlex(constants.angleMotorID, MotorType.kBrushless);
 
         SparkFlexConfig config_m_drivingMotor = new SparkFlexConfig();
-        config_m_drivingMotor.encoder.positionConversionFactor(Constants.Swerve.driveRevToMeters);
-        config_m_drivingMotor.encoder.velocityConversionFactor(Constants.Swerve.driveRpmToMetersPerSecond);
-        config_m_drivingMotor.closedLoop.p(Constants.Swerve.driveKP);
-        config_m_drivingMotor.closedLoop.i(Constants.Swerve.driveKI);
-        config_m_drivingMotor.closedLoop.d(Constants.Swerve.driveKD);
-        config_m_drivingMotor.closedLoop.velocityFF(1 / 565); // Kv=565 for NEO Vortex (look up on website)
-        config_m_drivingMotor.inverted(invert);
+        config_m_drivingMotor.closedLoop.apply(Swerve.drivePID);
+        config_m_drivingMotor.encoder.positionConversionFactor(Swerve.instanceConstants.drivePositionConversionFactor());
+        config_m_drivingMotor.encoder.velocityConversionFactor(Swerve.instanceConstants.driveVelocityConversionFactor());
+        config_m_drivingMotor.closedLoopRampRate(Swerve.timeToMaxLinearVelocity);
+        config_m_drivingMotor.inverted(Swerve.instanceConstants.driveMotorInvert);
 
         SparkFlexConfig config_m_turningMotor = new SparkFlexConfig();
-        config_m_turningMotor.encoder.positionConversionFactor(Constants.Swerve.DegreesPerTurnRotation);
-        config_m_turningMotor.encoder.velocityConversionFactor(Constants.Swerve.DegreesPerTurnRotation / 60);
-        config_m_turningMotor.closedLoop.p(Constants.Swerve.angleKP);
-        config_m_turningMotor.closedLoop.i(Constants.Swerve.angleKI);
-        config_m_turningMotor.closedLoop.d(Constants.Swerve.angleKD);
-        config_m_turningMotor.closedLoop.outputRange(-Constants.Swerve.anglePower, Constants.Swerve.anglePower);
-        config_m_turningMotor.closedLoopRampRate(Constants.Swerve.angleRampRate);
-        config_m_turningMotor.smartCurrentLimit(Constants.Swerve.angleContinuousCurrentLimit);
+        config_m_turningMotor.closedLoop.apply(Swerve.anglePID);
+        config_m_turningMotor.encoder.positionConversionFactor(Swerve.instanceConstants.drivePositionConversionFactor());
+        config_m_turningMotor.encoder.velocityConversionFactor(Swerve.instanceConstants.driveVelocityConversionFactor());
+        config_m_turningMotor.closedLoopRampRate(Swerve.timeToMaxAngularVelocity);
+        config_m_turningMotor.smartCurrentLimit(Swerve.angleLimits.continuousCurrentLimit);
 
         // Encoders inside the motor are configured and initial positions are set
         m_driveMotor.configure(config_m_drivingMotor, SparkBase.ResetMode.kResetSafeParameters, null);
@@ -87,9 +71,9 @@ public class SwerveModule {
         rel_driveEncoder.setPosition(0);
         rel_angleEncoder = m_turningMotor.getEncoder();
 
-        m_turningEncoder = new CANcoder(turningEncoderCANID, "rio");
+        m_turningEncoder = new CANcoder(constants.cancoderID, "rio");
 
-        synchronizeEncoders();
+        synchronizeEncoders(constants.angleOffset.getDegrees());
     }
 
     /**
@@ -125,9 +109,9 @@ public class SwerveModule {
      * @param desiredState Desired state with speed and angle.
      */
     public void setDesiredState(SwerveModuleState desiredState, String device_name, boolean isOpenLoop) {
-        this.desiredState = CTREModuleState.optimize(desiredState, getState().angle);
+        this.desiredState = ModuleState.optimize(desiredState, getState().angle);
 
-        if (Math.abs(this.desiredState.speedMetersPerSecond) <= (sparkFlexMaxSpeed * 0.01)) {
+        if (Math.abs(this.desiredState.speedMetersPerSecond) <= (Swerve.instanceConstants.driveFreeSpeed() * 0.01)) {
             m_turningMotor.stopMotor();
         }
         double degReference = this.desiredState.angle.getDegrees();
@@ -139,7 +123,7 @@ public class SwerveModule {
         // Drive motor controller:
         SparkClosedLoopController driving_controller = m_driveMotor.getClosedLoopController();
         if (isOpenLoop) {
-            double percentOutput = this.desiredState.speedMetersPerSecond / sparkFlexMaxSpeed;
+            double percentOutput = this.desiredState.speedMetersPerSecond / Swerve.instanceConstants.driveFreeSpeed();
             m_driveMotor.set(percentOutput);
         } else {
             double velocity = this.desiredState.speedMetersPerSecond;
@@ -151,9 +135,9 @@ public class SwerveModule {
         // cancoder angle: " + currentAngle);
     }
 
-    public void synchronizeEncoders() {
+    public void synchronizeEncoders(double offset) {
         double current_canCoder_state = getCANcoderAngle().getDegrees();
-        double absolutePosition = current_canCoder_state - this.constants.angleOffset.getDegrees();
+        double absolutePosition = current_canCoder_state - offset;
         System.out.println("(" + moduleName + ")" + " absolute positions: " + absolutePosition + " cancoder position: "
                 + current_canCoder_state);
         rel_angleEncoder.setPosition(-absolutePosition);
