@@ -1,6 +1,8 @@
-package frc.lib.util.swerveUtil;
+package frc.lib.swerve;
 
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import frc.robot.Constants;
 
 /* Contains values and required settings for common COTS swerve modules. */
 public class SwerveInstances {
@@ -15,6 +17,11 @@ public class SwerveInstances {
     public final boolean driveMotorInvert;
     public final boolean angleMotorInvert;
     public final boolean canCoderInvert;
+
+    private final DCMotor driveMotorConstants = DCMotor.getNeoVortex(1)
+            .withReduction(Constants.Swerve.instanceConstants.driveGearRatio);
+    private final DCMotor angleMotorConstants = DCMotor.getNeoVortex(1)
+            .withReduction(Constants.Swerve.instanceConstants.angleGearRatio);
 
     public SwerveInstances(double wheelDiameter, double angleGearRatio, double driveGearRatio, double angleKP,
             double angleKI, double angleKD, double angleKF, boolean driveMotorInvert, boolean angleMotorInvert,
@@ -114,5 +121,29 @@ public class SwerveInstances {
         public static final double SDSMK4i_L2 = (6.75 / 1.0);
         /** SDS MK4i - 6.12 : 1 */
         public static final double SDSMK4i_L3 = (6.12 / 1.0);
+    }
+
+    public double drivePositionConversionFactor() {
+        return wheelDiameter * Math.PI / driveGearRatio;
+    }
+
+    public double driveVelocityConversionFactor() {
+        return drivePositionConversionFactor() * 60;
+    }
+
+    public double anglePositionConversionFactor() {
+        return 360 / angleGearRatio;
+    }
+
+    public double angleVelocityConversionFactor() {
+        return anglePositionConversionFactor() * 60;
+    }
+
+    public double driveFreeSpeed() {
+        return (driveMotorConstants.freeSpeedRadPerSec / 2 * Math.PI) * drivePositionConversionFactor();
+    }
+
+    public double angleFreeSpeed() {
+        return (angleMotorConstants.freeSpeedRadPerSec / 2 * Math.PI) * anglePositionConversionFactor();
     }
 }
