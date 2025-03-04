@@ -44,7 +44,7 @@ import frc.robot.Constants.ElevatorConstants;
 import frc.robot.RobotMath.Elevator;
 
 public class ElevatorSubsystem extends SubsystemBase {
-        private boolean kZeroed;
+        //private boolean kZeroed;
 
         // This gearbox represents a gearbox containing 1 Neo
         // Either we have 2 gear boxes(1 for each Neo) or 1 gear box with 2 Neos//
@@ -137,7 +137,7 @@ public class ElevatorSubsystem extends SubsystemBase {
          * Subsystem constructor.
          */
         public ElevatorSubsystem() {
-                kZeroed = false;
+                //kZeroed = false;
                 SparkMaxConfig config = new SparkMaxConfig();
                 config
                                 .smartCurrentLimit(ElevatorConstants.kElevatorCurrentLimit)
@@ -151,10 +151,10 @@ public class ElevatorSubsystem extends SubsystemBase {
                 // -> Elevator Sim
 
                 if (RobotBase.isSimulation()) {
-                        m_limitSwitchLowSim = new DIOSim(m_limitSwitchLow);
+                        new DIOSim(m_limitSwitchLow);
                         SmartDashboard.putData("Elevator Low Limit Switch", m_limitSwitchLow);
 
-                        m_limitSwitchHighSim = new DIOSim(m_limitSwitchHigh);
+                        new DIOSim(m_limitSwitchHigh);
                         SmartDashboard.putData("Elevator Low Limit Switch", m_limitSwitchHigh);
                 }
         }
@@ -163,6 +163,17 @@ public class ElevatorSubsystem extends SubsystemBase {
          * Advance the simulation.
          */
         public void simulationPeriodic() {
+                if (m_motorSim.getRelativeEncoderSim().getPosition() <= 0.02) {
+                        m_limitSwitchLowSim.setValue(true);
+                } else {
+                        m_limitSwitchLowSim.setValue(false);
+                }
+
+                if (m_motorSim.getRelativeEncoderSim().getPosition() >= 200.0) {
+                        m_limitSwitchHighSim.setValue(true);
+                } else {
+                        m_limitSwitchHighSim.setValue(false);
+                }
                 // In this method, we update our simulation of what our elevator is doing
                 // First, we set our "inputs" (voltages)
                 m_elevatorSim.setInput(m_motorSim.getAppliedOutput() * RoboRioSim.getVInVoltage());
@@ -172,13 +183,9 @@ public class ElevatorSubsystem extends SubsystemBase {
 
                 // Finally, we set our simulated encoder's readings and simulated battery
                 // voltage
-                m_motorSim.iterate(
-                                Elevator
-                                                .convertDistanceToRotations(
-                                                                Meters.of(m_elevatorSim.getVelocityMetersPerSecond()))
-                                                .per(Second).in(RPM),
-                                RoboRioSim.getVInVoltage(),
-                                0.020);
+                m_motorSim.iterate(Elevator
+                                .convertDistanceToRotations(Meters.of(m_elevatorSim.getVelocityMetersPerSecond()))
+                                .per(Second).in(RPM), RoboRioSim.getVInVoltage(), 0.020);
 
                 // SimBattery estimates loaded battery voltages
                 RoboRioSim.setVInVoltage(
@@ -276,7 +283,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         }
 
         public void zeroElevator() {
-                this.kZeroed = true;
+                //kZeroed = true;
                 m_encoder.setPosition(0.0);
         }
 }
