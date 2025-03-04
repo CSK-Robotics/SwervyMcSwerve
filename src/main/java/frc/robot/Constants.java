@@ -1,7 +1,5 @@
 package frc.robot;
 
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.revrobotics.spark.SparkFlex;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -25,42 +23,7 @@ import frc.lib.util.swerveUtil.SwerveInstances;
 public final class Constants {
     public static final double stickDeadband = 0.05;
 
-    public static final Mechanism2d sideRobotView = new Mechanism2d(ArmConstants.kArmLength * 2,
-            ElevatorConstants.kMaxElevatorHeight.in(
-                    Meters) +
-                    ArmConstants.kArmLength);
-
-    public static final MechanismRoot2d kElevatorCarriage;
-    public static final MechanismLigament2d kArmMech;
-    public static final MechanismLigament2d kElevatorTower;
-
-    static {
-        kElevatorCarriage = Constants.sideRobotView.getRoot("ElevatorCarriage",
-                ArmConstants.kArmLength,
-                ElevatorConstants.kStartingHeightSim.in(
-                        Meters));
-        kArmMech = kElevatorCarriage.append(
-                new MechanismLigament2d(
-                        "Arm",
-                        ArmConstants.kArmLength,
-                        ArmConstants.kArmStartingAngle.in(Degrees),
-                        6,
-                        new Color8Bit(Color.kYellow)));
-        kElevatorTower = kElevatorCarriage.append(new MechanismLigament2d(
-                "Elevator",
-                ElevatorConstants.kStartingHeightSim.in(Meters),
-                -90,
-                6,
-                new Color8Bit(Color.kRed)));
-    }
-
     public static final class Swerve {
-
-        // Spark Max Idle Modes
-        // public static final SparkFlex.IdleMode driveIdleMode =
-        // CANSparkMax.IdleMode.kBrake;
-        // public static final SparkFlex.IdleMode angleIdleMode =
-        // CANSparkMax.IdleMode.kBrake;
 
         // Max Output Powers
         public static final double drivePower = 1;
@@ -146,9 +109,9 @@ public final class Constants {
                 public static final int driveMotorID = 2;
                 public static final int angleMotorID = 3;
                 public static final int canCoderID = 10;
-                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(0);//Rotation2d.fromDegrees(37.7);
-                public static final RevSwerveModuleConstants constants =
-                    new RevSwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
+                public static final Rotation2d angleOffset = Rotation2d.fromDegrees(0);// Rotation2d.fromDegrees(37.7);
+                public static final RevSwerveModuleConstants constants = new RevSwerveModuleConstants(driveMotorID,
+                        angleMotorID, canCoderID, angleOffset);
             }
 
             /* Front Right Module - Module 1 */
