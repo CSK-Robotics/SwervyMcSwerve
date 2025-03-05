@@ -1,8 +1,7 @@
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
-
-package frc.robot;
+package frc.robot.Subsystems;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -11,10 +10,13 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.AnalogGyro;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Swerve;
 
-/** Represents a swerve drive style drivetrain. */
-public class Drivetrain {
+/**
+ * Represents a swerve drive style drivetrain.
+ */
+public class DrivetrainSubsystem extends SubsystemBase {
     private final SwerveModule m_frontLeft = new SwerveModule(Swerve.Modules.mod0Constants,
             "m_frontLeft");
     private final SwerveModule m_frontRight = new SwerveModule(Swerve.Modules.mod1Constants,
@@ -46,7 +48,7 @@ public class Drivetrain {
                     m_backRight.getPosition()
             });
 
-    public Drivetrain() {
+    public DrivetrainSubsystem() {
         m_gyro.reset();
     }
 
@@ -56,28 +58,23 @@ public class Drivetrain {
      * @param xSpeed        Speed of the robot in the x direction (forward).
      * @param ySpeed        Speed of the robot in the y direction (sideways).
      * @param rot           Angular rate of the robot.
-     * @param fieldRelative Whether the provided x and y speeds are relative to the
-     *                      field.
+     * @param fieldRelative Whether the provided x and y speeds are relative to
+     *                      the field.
      */
     public void drive(
-            double xSpeed, double ySpeed, double rot, boolean fieldRelative, double periodSeconds) {
+            double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
 
-        ChassisSpeeds desiredChassisSpeeds = fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                xSpeed,
-                ySpeed,
-                rot,
-                m_gyro.getRotation2d())
-                : new ChassisSpeeds(
-                        xSpeed,
-                        ySpeed,
-                        rot);
+        ChassisSpeeds desiredChassisSpeeds = fieldRelative
+                ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, m_gyro.getRotation2d())
+                : new ChassisSpeeds(xSpeed, ySpeed, rot);
         SwerveModuleState[] swerveModuleStates = m_kinematics.toSwerveModuleStates(desiredChassisSpeeds);
 
         for (SwerveModuleState swerveModuleState : swerveModuleStates) {
             swerveModuleState.angle = swerveModuleState.angle.times(-1);
         }
 
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Swerve.instanceConstants.driveFreeSpeed());
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates,
+                Swerve.instanceConstants.driveFreeSpeed());
 
         m_frontLeft.setDesiredState(swerveModuleStates[0], "frontLeft", true);
         m_frontRight.setDesiredState(swerveModuleStates[1], "frontRight", true);
@@ -86,8 +83,10 @@ public class Drivetrain {
 
     }
 
-    /** Updates the field relative position of the robot. */
-    public void updateOdometry() {
+    /**
+     * Updates the field relative position of the robot.
+     */
+    private void updateOdometry() {
         m_odometry.update(
                 m_gyro.getRotation2d(),
                 new SwerveModulePosition[] {
@@ -97,4 +96,10 @@ public class Drivetrain {
                         m_backRight.getPosition()
                 });
     }
+
+    @Override
+    public void periodic() {
+        updateOdometry();
+    }
+
 }
