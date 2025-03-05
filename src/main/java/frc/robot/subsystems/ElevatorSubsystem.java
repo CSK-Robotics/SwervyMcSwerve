@@ -14,6 +14,10 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -49,6 +53,39 @@ import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
 
 public class ElevatorSubsystem extends SubsystemBase {
+    // THESE ARE DUMMY VALUES!!!!! TODO: #11 Update elevator position values once determined.
+    public enum Position {
+        ZERO(0.0),
+        PROCESSOR(0.0),
+        HPSTATION(0.0),
+        L1(20.0),
+        L2(40.0),
+        L3(60.0),
+        L4(80.0),
+        BARGE(100.0);
+
+        private static final Map<Double, Position> lookup = new HashMap<>();
+
+        static {
+            for (Position p : EnumSet.allOf(Position.class)) {
+                lookup.put(p.getPosition(), p);
+            }
+        }
+        private final double position;
+
+        private Position(double position) {
+            this.position = position;
+        }
+
+        public double getPosition() {
+            return position;
+        }
+
+        public static Position get(double position) {
+            return lookup.get(position);
+        }
+    }
+
     // Zeroed state
     private boolean kZeroed;
 
@@ -193,9 +230,9 @@ public class ElevatorSubsystem extends SubsystemBase {
      * @param goal Goal in meters
      * @return {@link edu.wpi.first.wpilibj2.command.Command}
      */
-    public Command setGoal(double goal) {
-        return runEnd(() -> reachGoal(goal), this::stop)
-                .until(new Trigger(() -> MathUtil.isNear(goal,
+    public Command setGoal(Position goal) {
+        return runEnd(() -> reachGoal(goal.getPosition()), this::stop)
+                .until(new Trigger(() -> MathUtil.isNear(goal.getPosition(),
                 getCarriageHeight(),
                 ElevatorConstants.kPositionTolerance)));
     }
