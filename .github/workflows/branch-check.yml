@@ -7,11 +7,26 @@
 name: Lint Code Base
 
 on:
-  - push
-  - pull_request
+  push:
+  workflow_dispatch:
+    inputs:
+      MANUAL_COMMIT_REF:
+        description: "The SHA of the commit to get the diff for"
+        required: true
+      MANUAL_BASE_REF:
+        description: "By default, the commit entered above is compared to the one directly before it; to go back further, enter an earlier SHA here"
+        required: false
 jobs:
-  run-lint:
+  run-precheck:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: read
+      # To report GitHub Actions status checks
+      statuses: write
+      issues: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,11 +37,16 @@ jobs:
       - name: Lint Code Base
         uses: github/super-linter@v4
         env:
-          VALIDATE_ALL_CODEBASE: false
+          VALIDATE_ALL_CODEBASE: true
+          FIX_GOOGLE_JAVA_FORMAT: true
           DEFAULT_BRANCH: "main"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Scan for TODOs and create issues
         uses: alstr/todo-to-issue-action@v4
+        env:
+          MANUAL_COMMIT_REF: ${{ inputs.MANUAL_COMMIT_REF }}
+          MANUAL_BASE_REF: ${{ inputs.MANUAL_BASE_REF }}
         with:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CLOSE_ISSUES: true
