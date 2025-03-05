@@ -145,6 +145,11 @@ public final class Constants {
         public static final Distance kMinElevatorHeight = Meters.of(0.0);
         public static final Distance kMaxElevatorHeight = Meters.of(10.25);
 
+        // TODO: #13 Find the actual values for CarriageGroundOffset, PositionTolerance and kZeroingSpeed
+        public static final double kCarriageGroundOffset = 0;
+        public static final double kPositionTolerance = 0;
+        public static final double kZeroingSpeed = 0;
+
         public static double kElevatorRampRate = 0.1;
         public static int kElevatorCurrentLimit = 40;
         public static double kMaxVelocity = Meters.of(4).per(Second).in(MetersPerSecond);

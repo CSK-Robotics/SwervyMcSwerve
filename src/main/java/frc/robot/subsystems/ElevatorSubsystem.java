@@ -1,7 +1,10 @@
-package frc.robot.subsystems;
+package frc.robot.Subsystems;
 
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import static edu.wpi.first.units.Units.Meters;
@@ -13,21 +16,23 @@ import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.sim.SparkMaxSim;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.units.measure.MutDistance;
 import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.DIOSim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
@@ -44,23 +49,32 @@ import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
 
 public class ElevatorSubsystem extends SubsystemBase {
-    // private boolean kZeroed;
+    // Zeroed state
+    private boolean kZeroed;
 
-    // This gearbox represents a gearbox containing 1 Neo
+    // This gearbox represents a gearbox containing 2 Neos
     // Either we have 2 gear boxes(1 for each Neo) or 1 gear box with 2 Neos//
     private final DCMotor m_elevatorGearbox = DCMotor.getNEO(2);
 
     // Standard classes for controlling our elevator
-    ElevatorFeedforward m_feedforward = new ElevatorFeedforward(
+    private final ElevatorFeedforward m_feedforward = new ElevatorFeedforward(
             ElevatorConstants.kElevatorkS,
             ElevatorConstants.kElevatorkG,
             ElevatorConstants.kElevatorkV,
             ElevatorConstants.kElevatorkA);
 
-    private final SparkMax m_motor = new SparkMax(12, MotorType.kBrushless);
-    private final RelativeEncoder m_encoder = m_motor.getEncoder();
-    private final SparkMaxSim m_motorSim = new SparkMaxSim(m_motor, m_elevatorGearbox);
+    private final TrapezoidProfile m_profile = new TrapezoidProfile(
+            new TrapezoidProfile.Constraints(ElevatorConstants.kMaxVelocity,
+                    ElevatorConstants.kMaxAcceleration));
 
+    // SparkMax and Encoder
+    private final SparkMax m_motor = new SparkMax(12, MotorType.kBrushless);
+    private final SparkMax m_motor2 = new SparkMax(13, MotorType.kBrushless);
+    private final SparkMaxSim m_motorSim = new SparkMaxSim(m_motor, m_elevatorGearbox);
+    private final RelativeEncoder m_encoder = m_motor.getEncoder();
+    private final SparkClosedLoopController m_controller = m_motor.getClosedLoopController();
+
+    // Limit Switches
     private final DigitalInput m_limitSwitchLow = new DigitalInput(1);
     private final DigitalInput m_limitSwitchHigh = new DigitalInput(2);
     private DIOSim m_limitSwitchLowSim = null;
@@ -68,14 +82,9 @@ public class ElevatorSubsystem extends SubsystemBase {
     public Trigger atMax = new Trigger(m_limitSwitchLow::get).onTrue(this.run(this::stop));
     public Trigger atMin = new Trigger(m_limitSwitchHigh::get).onTrue(this.run(() -> {
         stop();
-        zeroElevator();
+        m_encoder.setPosition(0.0);
+        kZeroed = true;
     }));
-
-    private final ProfiledPIDController m_controller = new ProfiledPIDController(ElevatorConstants.kElevatorKp,
-            ElevatorConstants.kElevatorKi,
-            ElevatorConstants.kElevatorKd,
-            new Constraints(ElevatorConstants.kMaxVelocity,
-                    ElevatorConstants.kMaxAcceleration));
 
     // Simulation classes help us simulate what's going on, including gravity.
     private final ElevatorSim m_elevatorSim = new ElevatorSim(
@@ -121,11 +130,11 @@ public class ElevatorSubsystem extends SubsystemBase {
                                                                 .getBatteryVoltage(),
                                                 Volts))
                                 .linearPosition(m_distance.mut_replace(
-                                        getHeightMeters(),
+                                        m_encoder.getPosition(),
                                         Meters)) // Records Height in Meters via
                                                  // SysIdRoutineLog.linearPosition
                                 .linearVelocity(m_velocity.mut_replace(
-                                        getVelocityMetersPerSecond(),
+                                        m_encoder.getVelocity(),
                                         MetersPerSecond)); // Records velocity
                                                            // in MetersPerSecond
                                                            // via
@@ -138,14 +147,16 @@ public class ElevatorSubsystem extends SubsystemBase {
      */
     public ElevatorSubsystem() {
         // kZeroed = false;
-        SparkMaxConfig config = new SparkMaxConfig();
-        config
-                .smartCurrentLimit(ElevatorConstants.kElevatorCurrentLimit)
-                .closedLoopRampRate(ElevatorConstants.kElevatorRampRate).closedLoop
-                .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .outputRange(-1, 1);
-        m_motor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-
+        m_motor.configure(
+                new SparkMaxConfig().smartCurrentLimit(ElevatorConstants.kElevatorCurrentLimit)
+                        .closedLoopRampRate(ElevatorConstants.kElevatorRampRate)
+                        .apply(new ClosedLoopConfig()
+                                .pid(ElevatorConstants.kElevatorKp, ElevatorConstants.kElevatorKi,
+                                        ElevatorConstants.kElevatorKd)
+                                .feedbackSensor(FeedbackSensor.kPrimaryEncoder).outputRange(-1, 1)),
+                ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        m_motor2.configure(new SparkMaxConfig().follow(m_motor, true), ResetMode.kResetSafeParameters,
+                PersistMode.kPersistParameters);
         // Publish Mechanism2d to SmartDashboard
         // To view the Elevator visualization, select Network Tables -> SmartDashboard
         // -> Elevator Sim
@@ -157,11 +168,70 @@ public class ElevatorSubsystem extends SubsystemBase {
             m_limitSwitchHighSim = new DIOSim(m_limitSwitchHigh);
             SmartDashboard.putData("Elevator Low Limit Switch", m_limitSwitchHigh);
         }
+
+        this.setDefaultCommand(zeroElevator());
+    }
+
+    // Commands
+
+    /**
+     * Runs the SysId routine to tune the Arm
+     *
+     * @return SysId Routine command
+     */
+    public Command runSysIdRoutine() {
+        return (m_sysIdRoutine.dynamic(Direction.kForward).until(atMax))
+                .andThen(m_sysIdRoutine.dynamic(Direction.kReverse).until(atMin))
+                .andThen(m_sysIdRoutine.quasistatic(Direction.kForward).until(atMax))
+                .andThen(m_sysIdRoutine.quasistatic(Direction.kReverse).until(atMin))
+                .andThen(Commands.print("DONE"));
+    }
+
+    /**
+     * Set the goal of the elevator
+     *
+     * @param goal Goal in meters
+     * @return {@link edu.wpi.first.wpilibj2.command.Command}
+     */
+    public Command setGoal(double goal) {
+        return runEnd(() -> reachGoal(goal), this::stop)
+                .until(new Trigger(() -> MathUtil.isNear(goal,
+                getCarriageHeight(),
+                ElevatorConstants.kPositionTolerance)));
+    }
+
+    /**
+     * Zero the elevator
+     *
+     * @return {@link edu.wpi.first.wpilibj2.command.Command}
+     */
+    public Command zeroElevator() {
+        return runEnd(() -> {
+            if (kZeroed) {
+                reachGoal(0.0);
+            } else {
+                double feedforward = m_feedforward.calculateWithVelocities(m_encoder.getVelocity(),
+                        ElevatorConstants.kZeroingSpeed);
+                m_controller.setReference(ElevatorConstants.kZeroingSpeed, ControlType.kVelocity, ClosedLoopSlot.kSlot0,
+                        feedforward);
+            }
+        }, this::stop).until(atMin);
+    }
+
+    // Periodic
+
+    /**
+     * Update the subsystem.
+     */
+    @Override
+    public void periodic() {
+        updateTelemetry();
     }
 
     /**
      * Advance the simulation.
      */
+    @Override
     public void simulationPeriodic() {
         if (m_motorSim.getRelativeEncoderSim().getPosition() <= 0.02) {
             m_limitSwitchLowSim.setValue(true);
@@ -196,31 +266,38 @@ public class ElevatorSubsystem extends SubsystemBase {
                 BatterySim.calculateDefaultBatteryLoadedVoltage(m_elevatorSim.getCurrentDrawAmps()));
     }
 
+    // Control
+
     /**
      * Run control loop to reach and maintain goal.
      *
      * @param goal the position to maintain
      */
     public void reachGoal(double goal) {
-        double voltsOut = MathUtil.clamp(
-                m_controller.calculate(getHeightMeters(), goal) +
-                        m_feedforward.calculateWithVelocities(getVelocityMetersPerSecond(),
-                                m_controller.getSetpoint().velocity),
-                -7, 7);
-        m_motor.setVoltage(voltsOut);
+        State setpoint = m_profile.calculate(TimedRobot.kDefaultPeriod,
+                new State(m_encoder.getPosition(), m_encoder.getVelocity()),
+                new State(goal, 0.0));
+        double feedforward = m_feedforward.calculateWithVelocities(m_encoder.getVelocity(), setpoint.velocity);
+        m_controller.setReference(setpoint.velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedforward);
     }
 
     /**
-     * Runs the SysId routine to tune the Arm
-     *
-     * @return SysId Routine command
+     * Stop the control loop and motor output.
      */
-    public Command runSysIdRoutine() {
-        return (m_sysIdRoutine.dynamic(Direction.kForward).until(atMax))
-                .andThen(m_sysIdRoutine.dynamic(Direction.kReverse).until(atMin))
-                .andThen(m_sysIdRoutine.quasistatic(Direction.kForward).until(atMax))
-                .andThen(m_sysIdRoutine.quasistatic(Direction.kReverse).until(atMin))
-                .andThen(Commands.print("DONE"));
+    public void stop() {
+        double feedforward = m_feedforward.calculateWithVelocities(m_encoder.getVelocity(), 0.0);
+        m_controller.setReference(0.0, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedforward);
+    }
+
+    // Telemetry
+
+    /**
+     * Update telemetry, including the mechanism visualization.
+     */
+    public void updateTelemetry() {
+        // Update elevator visualization with position
+        Constants.kElevatorCenterStage.setLength(m_encoder.getPosition());
+        Constants.kElevatorCarriage.setLength(getCarriageHeight());
     }
 
     /**
@@ -228,9 +305,8 @@ public class ElevatorSubsystem extends SubsystemBase {
      *
      * @return Height in meters
      */
-    public double getHeightMeters() {
-        return (m_encoder.getPosition() / ElevatorConstants.kElevatorGearing) *
-                (2 * Math.PI * ElevatorConstants.kElevatorDrumRadius);
+    public double getCarriageHeight() {
+        return (m_encoder.getPosition() * 2) + ElevatorConstants.kCarriageGroundOffset;
     }
 
     /**
@@ -238,56 +314,7 @@ public class ElevatorSubsystem extends SubsystemBase {
      *
      * @return velocity in meters per second
      */
-    public double getVelocityMetersPerSecond() {
-        return ((m_encoder.getVelocity() / 60) / ElevatorConstants.kElevatorGearing) *
-                (2 * Math.PI * ElevatorConstants.kElevatorDrumRadius);
-    }
-
-    /**
-     * A trigger for when the height is at an acceptable tolerance.
-     *
-     * @param height    Height in Meters
-     * @param tolerance Tolerance in meters.
-     * @return {@link Trigger}
-     */
-    public Trigger atHeight(double height, double tolerance) {
-        return new Trigger(() -> MathUtil.isNear(height,
-                getHeightMeters(),
-                tolerance));
-    }
-
-    /**
-     * Set the goal of the elevator
-     *
-     * @param goal Goal in meters
-     * @return {@link edu.wpi.first.wpilibj2.command.Command}
-     */
-    public Command setGoal(double goal) {
-        return run(() -> reachGoal(goal));
-    }
-
-    /**
-     * Stop the control loop and motor output.
-     */
-    public void stop() {
-        m_motor.set(0.0);
-    }
-
-    /**
-     * Update telemetry, including the mechanism visualization.
-     */
-    public void updateTelemetry() {
-        // Update elevator visualization with position
-        Constants.kElevatorCenterStage.setLength(getHeightMeters());
-        Constants.kElevatorCarriage.setLength(getHeightMeters());
-    }
-
-    @Override
-    public void periodic() {
-    }
-
-    public void zeroElevator() {
-        // this.kZeroed = true;
-        m_encoder.setPosition(0.0);
+    public double getCarriageVelocity() {
+        return m_encoder.getVelocity() * 2;
     }
 }
