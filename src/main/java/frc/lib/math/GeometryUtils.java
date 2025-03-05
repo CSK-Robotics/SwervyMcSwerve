@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Twist2d;
 public class GeometryUtils {
   private static final double kEps = 1E-9;
 
-
   public static Pose2d exp(final Twist2d delta) {
     double sin_theta = Math.sin(delta.dtheta);
     double cos_theta = Math.cos(delta.dtheta);
@@ -33,13 +32,11 @@ public class GeometryUtils {
     if (Math.abs(cos_minus_one) < kEps) {
       halftheta_by_tan_of_halfdtheta = 1.0 - 1.0 / 12.0 * dtheta * dtheta;
     } else {
-      halftheta_by_tan_of_halfdtheta =
-          -(half_dtheta * Math.sin(transform.getRotation().getRadians())) / cos_minus_one;
+      halftheta_by_tan_of_halfdtheta = -(half_dtheta * Math.sin(transform.getRotation().getRadians())) / cos_minus_one;
     }
-    final Translation2d translation_part =
-        transform
-            .getTranslation()
-            .rotateBy(new Rotation2d(halftheta_by_tan_of_halfdtheta, -half_dtheta));
+    final Translation2d translation_part = transform
+        .getTranslation()
+        .rotateBy(new Rotation2d(halftheta_by_tan_of_halfdtheta, -half_dtheta));
     return new Twist2d(translation_part.getX(), translation_part.getY(), dtheta);
   }
 }

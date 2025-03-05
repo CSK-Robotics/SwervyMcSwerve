@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot;
+package frc.robot.Subsystems;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -52,15 +52,19 @@ public class SwerveModule {
 
         SparkFlexConfig config_m_drivingMotor = new SparkFlexConfig();
         config_m_drivingMotor.closedLoop.apply(Swerve.drivePID);
-        config_m_drivingMotor.encoder.positionConversionFactor(Swerve.instanceConstants.drivePositionConversionFactor());
-        config_m_drivingMotor.encoder.velocityConversionFactor(Swerve.instanceConstants.driveVelocityConversionFactor());
+        config_m_drivingMotor.encoder
+                .positionConversionFactor(Swerve.instanceConstants.drivePositionConversionFactor());
+        config_m_drivingMotor.encoder
+                .velocityConversionFactor(Swerve.instanceConstants.driveVelocityConversionFactor());
         config_m_drivingMotor.closedLoopRampRate(Swerve.timeToMaxLinearVelocity);
         config_m_drivingMotor.inverted(Swerve.instanceConstants.driveMotorInvert);
 
         SparkFlexConfig config_m_turningMotor = new SparkFlexConfig();
         config_m_turningMotor.closedLoop.apply(Swerve.anglePID);
-        config_m_turningMotor.encoder.positionConversionFactor(Swerve.instanceConstants.drivePositionConversionFactor());
-        config_m_turningMotor.encoder.velocityConversionFactor(Swerve.instanceConstants.driveVelocityConversionFactor());
+        config_m_turningMotor.encoder
+                .positionConversionFactor(Swerve.instanceConstants.drivePositionConversionFactor());
+        config_m_turningMotor.encoder
+                .velocityConversionFactor(Swerve.instanceConstants.driveVelocityConversionFactor());
         config_m_turningMotor.closedLoopRampRate(Swerve.timeToMaxAngularVelocity);
         config_m_turningMotor.smartCurrentLimit(Swerve.angleLimits.continuousCurrentLimit);
 
