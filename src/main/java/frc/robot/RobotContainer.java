@@ -3,6 +3,7 @@ package frc.robot;
 import frc.robot.Commands.Orchestrator;
 import frc.robot.HumanInterface.DriverControls;
 import frc.robot.HumanInterface.OperatorControls;
+import frc.robot.HumanInterface.StationData;
 import frc.robot.Subsystems.AlgaeSubsystem;
 import frc.robot.Subsystems.ClimberSubsystem;
 import frc.robot.Subsystems.CoralSubsystem;
@@ -14,6 +15,10 @@ public class RobotContainer {
       new CoralSubsystem(), new AlgaeSubsystem(), new ClimberSubsystem());
   private final DriverControls driver = new DriverControls(orchestrator);
   private final OperatorControls operator = new OperatorControls(orchestrator);
+
+  public RobotContainer() {
+    StationData.getInstance(orchestrator);
+  }
 
   public void pollControllers() {
     driver.m_loop.poll();

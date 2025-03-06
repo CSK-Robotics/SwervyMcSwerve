@@ -49,11 +49,12 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.lib.math.RobotMath.Elevator;
-import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
+import frc.robot.HumanInterface.StationData;
 
 public class ElevatorSubsystem extends SubsystemBase {
-    // THESE ARE DUMMY VALUES!!!!! TODO: #11 Update elevator position values once determined.
+    // THESE ARE DUMMY VALUES!!!!! TODO: #11 Update elevator position values once
+    // determined.
     public enum Position {
         ZERO(0.0),
         PROCESSOR(0.0),
@@ -230,8 +231,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     public Command setGoal(Position goal) {
         return runEnd(() -> reachGoal(goal.getPosition()), this::stop)
                 .until(new Trigger(() -> MathUtil.isNear(goal.getPosition(),
-                getCarriageHeight(),
-                ElevatorConstants.kPositionTolerance)));
+                        getCarriageHeight(),
+                        ElevatorConstants.kPositionTolerance)));
     }
 
     /**
@@ -329,9 +330,10 @@ public class ElevatorSubsystem extends SubsystemBase {
      * Update telemetry, including the mechanism visualization.
      */
     public void updateTelemetry() {
+        StationData data = StationData.getInstance();
         // Update elevator visualization with position
-        Constants.kElevatorCenterStage.setLength(m_encoder.getPosition());
-        Constants.kElevatorCarriage.setLength(getCarriageHeight());
+        data.kElevatorCarriage.setLength(
+                (ElevatorConstants.kElevatorHeight - ElevatorConstants.kCarriageGroundOffset) - getCarriageHeight());
     }
 
     /**

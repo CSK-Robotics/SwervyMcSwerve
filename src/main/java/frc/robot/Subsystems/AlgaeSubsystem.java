@@ -4,10 +4,11 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import frc.robot.Constants.AlgaeConstants;
+import frc.robot.HumanInterface.StationData;
 
 public class AlgaeSubsystem extends EndEffectorSubsystem {
     // THESE ARE DUMMY VALUES!!!!! TODO: #8 Update algae pivot position values once determined.
-    private static final Map<FieldPosition, Double> POSITIONS;
+    public static final Map<FieldPosition, Double> POSITIONS;
     static {
         POSITIONS = new EnumMap<>(FieldPosition.class);
         POSITIONS.put(FieldPosition.STARTING, 0.0);
@@ -19,6 +20,6 @@ public class AlgaeSubsystem extends EndEffectorSubsystem {
     }
 
     public AlgaeSubsystem() {
-        super(AlgaeConstants.instance, POSITIONS);
+        super(AlgaeConstants.instance, POSITIONS, StationData.getInstance().kAlgaeMech);
     }
 }

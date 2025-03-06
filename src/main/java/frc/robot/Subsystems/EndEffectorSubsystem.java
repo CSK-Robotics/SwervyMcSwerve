@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.constants.motor.MotorConfig;
@@ -56,6 +57,7 @@ public class EndEffectorSubsystem extends SubsystemBase {
     protected final Map<FieldPosition, Double> POSITIONS;
     private final SensorConfig sensorConfig;
     private final MotorConfig armConfig;
+    private final MechanismLigament2d mechanism;
 
     private final SparkFlex m_wheelMotor, m_armMotor;
     private final AbsoluteEncoder m_encoder;
@@ -74,8 +76,9 @@ public class EndEffectorSubsystem extends SubsystemBase {
     private final EventLoop m_loop = new EventLoop();
     private final BooleanEvent hasGamePiece;
 
-    public EndEffectorSubsystem(SubsystemConstants constants, Map<FieldPosition, Double> positions) {
+    public EndEffectorSubsystem(SubsystemConstants constants, Map<FieldPosition, Double> positions, MechanismLigament2d mechanism) {
         POSITIONS = new EnumMap<>(positions);
+        this.mechanism = mechanism;
 
         // Configure Wheel Motor
 
@@ -296,6 +299,16 @@ public class EndEffectorSubsystem extends SubsystemBase {
      */
     public void stopWheel() {
         m_wheelMotor.set(0.0);
+    }
+
+    // Telemetry
+
+    /**
+     * Update telemetry, including the mechanism visualization.
+     */
+    public void updateTelemetry() {
+        // Update elevator visualization with position
+        mechanism.setAngle(m_encoder.getPosition());
     }
 
     // Triggers
