@@ -4,13 +4,46 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.revrobotics.AbsoluteEncoder;
+import com.revrobotics.sim.SparkFlexSim;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
+import au.grapplerobotics.ConfigurationFailedException;
+import au.grapplerobotics.LaserCan;
+import au.grapplerobotics.interfaces.LaserCanInterface;
+import au.grapplerobotics.simulation.MockLaserCan;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.event.BooleanEvent;
+import edu.wpi.first.wpilibj.event.EventLoop;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.CoralConstants;
 
 public class CoralSubsystem extends SubsystemBase {
-    // THESE ARE DUMMY VALUES!!!!! TODO: #10 Update coral arm position values once determined.
+    // THESE ARE DUMMY VALUES!!!!! TODO: #10 Update coral arm position values once
+    // determined.
     public enum Position {
         STARTING(0.0),
+        DRIVING(0.0),
         HPSTATION(0.0),
         L1(20.0),
         L2(40.0),
@@ -38,21 +71,213 @@ public class CoralSubsystem extends SubsystemBase {
         }
     }
 
+    private final DCMotor m_wheelGearbox = DCMotor.getNeoVortex(1);
+    private final DCMotor m_armGearbox = DCMotor.getNeoVortex(1);
+
+    private final SparkFlex m_wheel = new SparkFlex(14, SparkFlex.MotorType.kBrushless);
+    private final SparkFlexSim m_wheelSim = new SparkFlexSim(m_wheel, m_wheelGearbox);
+    private final SparkFlex m_arm = new SparkFlex(15, SparkFlex.MotorType.kBrushless);
+    private final SparkFlexSim m_armSim = new SparkFlexSim(m_arm, m_armGearbox);
+    private final AbsoluteEncoder m_encoder = m_arm.getAbsoluteEncoder();
+    private final SparkClosedLoopController m_controller = m_arm.getClosedLoopController();
+
+    private final ArmFeedforward m_feedforward = new ArmFeedforward(
+            CoralConstants.kS,
+            CoralConstants.kG,
+            CoralConstants.kV,
+            CoralConstants.kA);
+
+    private final TrapezoidProfile m_profile = new TrapezoidProfile(
+            new TrapezoidProfile.Constraints(CoralConstants.kMaxVelocity, CoralConstants.kMaxAcceleration));
+
+    private final SingleJointedArmSim m_coralArmSim = new SingleJointedArmSim(m_armGearbox, 9, 0, 0, 0, 0, true, 0, 0.0,
+            0.1);
+    private final FlywheelSim m_coralWheelSim = new FlywheelSim(
+            LinearSystemId.createFlywheelSystem(m_wheelGearbox, 1, 1), m_wheelGearbox, 1, 0.1);
+
+    private final LaserCanInterface m_laser;
+
+    private final EventLoop m_loop = new EventLoop();
+    private final BooleanEvent hasCoral;
+
+    public CoralSubsystem() {
+        m_wheel.configure(new SparkFlexConfig().idleMode(IdleMode.kBrake).smartCurrentLimit(
+                CoralConstants.wheelLimits.peakCurrentLimit, CoralConstants.wheelLimits.continuousCurrentLimit),
+                ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+        m_arm.configure(new SparkFlexConfig().idleMode(IdleMode.kBrake).smartCurrentLimit(
+                CoralConstants.angleLimits.peakCurrentLimit, CoralConstants.angleLimits.continuousCurrentLimit)
+                .closedLoopRampRate(CoralConstants.kRampRate)
+                .apply(CoralConstants.gains.feedbackSensor(FeedbackSensor.kAbsoluteEncoder).outputRange(-1, 1)),
+                ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+        if (RobotBase.isSimulation()) {
+            m_laser = new MockLaserCan();
+        } else {
+            m_laser = new LaserCan(0);
+        }
+
+        // Optionally initialise the settings of the LaserCAN, if you haven't already
+        // done so in GrappleHook
+        try {
+            m_laser.setRangingMode(LaserCan.RangingMode.SHORT);
+            m_laser.setRegionOfInterest(CoralConstants.roi);
+            m_laser.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_33MS);
+        } catch (ConfigurationFailedException e) {
+            System.out.println("Configuration failed! " + e);
+        }
+
+        hasCoral = new BooleanEvent(m_loop, () -> MathUtil.isNear(CoralConstants.kCoralDetectDistance,
+                m_laser.getMeasurement().distance_mm,
+                CoralConstants.kCoralDetectTolerance));
+    }
+
+    // Commands
+
+    /**
+     * Set the goal of the coral arm
+     *
+     * @param goal Goal in meters
+     * @return {@link edu.wpi.first.wpilibj2.command.Command}
+     */
+    public Command aimCoral(Position goal) {
+        return runEnd(() -> {
+            reachGoal(goal.getPosition());
+            stopWheel();
+        }, () -> {
+            stop();
+            stopWheel();
+        }).until(atPosition(goal));
+    }
+
+    /**
+     * Release the coral with arm at set position
+     *
+     * @param goal Goal in meters
+     * @param fire Fire event
+     * @return {@link edu.wpi.first.wpilibj2.command.Command}
+     */
+    public Command scoreCoral(Position goal, BooleanEvent fire) {
+        return runEnd(() -> {
+            reachGoal(goal.getPosition());
+            fire.ifHigh(() -> setWheel(-0.5));
+        }, () -> {
+            stop();
+            stopWheel();
+        }).until(hasCoral.negate());
+    }
+
+    /**
+     * Intake coral from human player station
+     *
+     * @param goal Goal in meters
+     * @return {@link edu.wpi.first.wpilibj2.command.Command}
+     */
+    public Command intakeCoral() {
+        return runEnd(() -> {
+            reachGoal(Position.HPSTATION.getPosition());
+            atPosition(Position.HPSTATION).ifHigh(() -> setWheel(0.5));
+        }, () -> {
+            stop();
+            stopWheel();
+        }).until(hasCoral);
+    }
+
+    // Periodic
+
+    /**
+     * Update the subsystem.
+     */
+    @Override
+    public void periodic() {
+        m_loop.poll();
+    }
+
+    /**
+     * Advance the simulation.
+     */
+    @Override
+    public void simulationPeriodic() {
+        // In this method, we update our simulation of what our mechanism is doing
+        // First, we set our "inputs" (voltages)
+        m_coralArmSim.setInput(m_armSim.getAppliedOutput() * RoboRioSim.getVInVoltage());
+        m_coralWheelSim.setInput(m_wheelSim.getAppliedOutput() * RoboRioSim.getVInVoltage());
+
+        // Next, we update it. The standard loop time is 20ms.
+        m_coralArmSim.update(0.020);
+        m_coralWheelSim.update(0.020);
+
+        // Finally, we set our simulated encoder's readings and simulated battery
+        // voltage
+        m_armSim.iterate(m_coralArmSim.getVelocityRadPerSec(),
+                RoboRioSim.getVInVoltage(),
+                0.020);
+
+        // Finally, we set our simulated encoder's readings and simulated battery
+        // voltage
+        m_wheelSim.iterate(m_coralWheelSim.getAngularVelocityRadPerSec(),
+                RoboRioSim.getVInVoltage(),
+                0.020);
+
+        // SimBattery estimates loaded battery voltages
+        RoboRioSim.setVInVoltage(
+                BatterySim.calculateDefaultBatteryLoadedVoltage(m_coralArmSim.getCurrentDrawAmps(),
+                        m_coralWheelSim.getCurrentDrawAmps()));
+
+        // TODO: simulate laserCAN
+    }
+
+    // Controls
+
     /**
      * Run control loop to reach and maintain goal.
      *
      * @param goal the position to maintain
      */
-    public void setTargetPosition(double goal) {
+    public void reachGoal(double goal) {
+        State setpoint = m_profile.calculate(TimedRobot.kDefaultPeriod,
+                new State(m_encoder.getPosition(), m_encoder.getVelocity()),
+                new State(goal, 0.0));
+        double feedforward = m_feedforward.calculate(m_encoder.getPosition(), setpoint.velocity);
+        m_controller.setReference(setpoint.velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedforward);
     }
 
     /**
-     * Set the goal of the arm
+     * Set the wheel speed
+     *
+     * @param speed Speed in meters per second
+     */
+    public void setWheel(double speed) {
+        m_wheel.set(speed);
+    }
+
+    /**
+     * Stop the control loop and motor output.
+     */
+    public void stop() {
+        double feedforward = m_feedforward.calculateWithVelocities(m_encoder.getPosition(), m_encoder.getVelocity(),
+                0.0);
+        m_controller.setReference(0.0, ControlType.kVelocity, ClosedLoopSlot.kSlot0, feedforward);
+    }
+
+    /**
+     * Stop the wheel
+     */
+    public void stopWheel() {
+        m_wheel.set(0.0);
+    }
+
+    // Triggers
+
+    /**
+     * Trigger when the arm is at a position
      *
      * @param goal Goal in meters
-     * @return {@link edu.wpi.first.wpilibj2.command.Command}
+     * @return {@link edu.wpi.first.wpilibj2.command.button.Trigger}
      */
-    public Command setGoal(Position goal) {
-        return run(() -> setTargetPosition(goal.getPosition()));
+    public BooleanEvent atPosition(Position goal) {
+        return new BooleanEvent(m_loop, () -> MathUtil.isNear(goal.getPosition(),
+                m_encoder.getPosition(),
+                CoralConstants.kPositionTolerance));
     }
 }

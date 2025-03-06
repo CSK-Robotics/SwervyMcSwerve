@@ -1,9 +1,13 @@
 package frc.robot.HumanInterface;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.event.EventLoop;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Subsystems.AlgaeSubsystem.Position;
 import frc.robot.Constants.Swerve;
 import frc.robot.Commands.Orchestrator;
@@ -20,11 +24,15 @@ public class DriverControls {
 
     private final Orchestrator m_orchestrator;
     public final EventLoop m_loop = new EventLoop();
+    public final Map<String, Trigger> m_triggers = new HashMap<String, Trigger>();
 
     public DriverControls(Orchestrator orchestrator) {
         m_orchestrator = orchestrator;
-        m_controller.leftBumper(m_loop).debounce(0.2).ifHigh(() -> orchestrator.Climb());
-        m_controller.rightBumper(m_loop).debounce(0.2).ifHigh(() -> orchestrator.ScoreAlgae(Position.PROCESSOR, false));
+        m_triggers.put("LB: Climb",
+                new Trigger(m_controller.leftBumper(m_loop).debounce(0.2)).onTrue(orchestrator.Climb()));
+        m_triggers.put("RB: Release Algae",
+                new Trigger(m_controller.rightBumper(m_loop).debounce(0.2)).whileTrue(
+                        orchestrator.ScoreAlgae(Position.PROCESSOR, false, m_controller.rightBumper(m_loop))));
         m_controller.start(m_loop).debounce(0.2).ifHigh(() -> m_fieldRelative = !m_fieldRelative);
         m_loop.bind(this::driveWithJoystick);
     }
@@ -48,6 +56,6 @@ public class DriverControls {
         final var rot = -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02))
                 * Swerve.instanceConstants.driveFreeSpeed();// TODO: #7 calculate maximum angular velocity of robot.
 
-        m_orchestrator.Drive(xSpeed, ySpeed, rot, m_fieldRelative);
+        m_orchestrator.Drive(xSpeed, ySpeed, rot, m_fieldRelative).schedule();
     }
 }

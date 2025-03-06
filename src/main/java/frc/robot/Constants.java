@@ -3,6 +3,7 @@ package frc.robot;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 
+import au.grapplerobotics.interfaces.LaserCanInterface.RegionOfInterest;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -156,5 +157,39 @@ public final class Constants {
         public static double kMaxVelocity = Meters.of(4).per(Second).in(MetersPerSecond);
         public static double kMaxAcceleration = Meters.of(8).per(Second).per(Second)
                 .in(MetersPerSecondPerSecond);
+    }
+
+    public static final class CoralConstants {
+        public static final double kS = 0.0; // Example value, replace with actual value
+        public static final double kG = 0.0; // Example value, replace with actual value
+        public static final double kV = 0.0; // Example value, replace with actual value
+        public static final double kA = 0.0; // Example value, replace with actual value
+        public static final double kMaxVelocity = 0;
+        public static final double kMaxAcceleration = 0;
+        public static final CurrentLimits wheelLimits = new CurrentLimits(0, 0, 0.0, true);
+        public static final CurrentLimits angleLimits = new CurrentLimits(0, 0, 0.0, true);
+        public static final double kRampRate = 0;
+        public static final ClosedLoopConfig gains = new ClosedLoopConfig().pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot0);
+        public static final RegionOfInterest roi = new RegionOfInterest(8, 8, 16, 16);
+        public static final double kPositionTolerance = 0;
+        public static final double kCoralDetectTolerance = 0;
+        public static final double kCoralDetectDistance = 0;
+    }
+
+    public static final class AlgaeConstants {
+        public static final double kS = 0.0; // Example value, replace with actual value
+        public static final double kG = 0.0; // Example value, replace with actual value
+        public static final double kV = 0.0; // Example value, replace with actual value
+        public static final double kA = 0.0; // Example value, replace with actual value
+        public static final double kMaxVelocity = 0;
+        public static final double kMaxAcceleration = 0;
+        public static final CurrentLimits wheelLimits = new CurrentLimits(0, 0, 0.0, true);
+        public static final CurrentLimits angleLimits = new CurrentLimits(0, 0, 0.0, true);
+        public static final double kRampRate = 0;
+        public static final ClosedLoopConfig gains = new ClosedLoopConfig().pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot0);
+        public static final RegionOfInterest roi = new RegionOfInterest(8, 8, 16, 16);
+        public static final double kPositionTolerance = 0;
+        public static final double kAlgaeDetectTolerance = 0;
+        public static final double kAlgaeDetectDistance = 0;
     }
 }
