@@ -7,6 +7,7 @@ import frc.robot.Constants.CoralConstants;
 
 
 public class CoralSubsystem extends EndEffectorSubsystem {
+    // THESE ARE DUMMY VALUES!!!!! TODO: #10 Update coral arm position values once determined.
     private static final Map<FieldPosition, Double> POSITIONS;
     static {
         POSITIONS = new EnumMap<>(FieldPosition.class);

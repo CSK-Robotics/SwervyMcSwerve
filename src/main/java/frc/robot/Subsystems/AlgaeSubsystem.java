@@ -6,6 +6,7 @@ import java.util.Map;
 import frc.robot.Constants.AlgaeConstants;
 
 public class AlgaeSubsystem extends EndEffectorSubsystem {
+    // THESE ARE DUMMY VALUES!!!!! TODO: #8 Update algae pivot position values once determined.
     private static final Map<FieldPosition, Double> POSITIONS;
     static {
         POSITIONS = new EnumMap<>(FieldPosition.class);
