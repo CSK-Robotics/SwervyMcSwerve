@@ -168,6 +168,7 @@ public final class Constants {
                 .in(MetersPerSecondPerSecond);
     }
 
+    // TODO: #15 Find the actual values for Coral
     public static final class CoralConstants extends SubsystemConstants {
         private static final int kArmMotorID = 0;
         private static final int kWheelMotorID = 0;
@@ -214,6 +215,7 @@ public final class Constants {
         public static final CoralConstants instance = new CoralConstants();
     }
 
+    // TODO: #16 Find the actual values for Coral
     public static final class AlgaeConstants extends SubsystemConstants {
         private static final int kArmMotorID = 0;
         private static final int kWheelMotorID = 0;
