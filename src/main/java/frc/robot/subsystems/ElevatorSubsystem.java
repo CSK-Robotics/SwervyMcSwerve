@@ -49,11 +49,12 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.lib.math.RobotMath.Elevator;
-import frc.robot.Constants;
 import frc.robot.Constants.ElevatorConstants;
+import frc.robot.HumanInterface.StationData;
 
 public class ElevatorSubsystem extends SubsystemBase {
-    // THESE ARE DUMMY VALUES!!!!! TODO: #11 Update elevator position values once determined.
+    // THESE ARE DUMMY VALUES!!!!! TODO: #11 Update elevator position values once
+    // determined.
     public enum Position {
         ZERO(0.0),
         PROCESSOR(0.0),
@@ -114,8 +115,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     // Limit Switches
     private final DigitalInput m_limitSwitchLow = new DigitalInput(1);
     private final DigitalInput m_limitSwitchHigh = new DigitalInput(2);
-    private DIOSim m_limitSwitchLowSim = null;
-    private DIOSim m_limitSwitchHighSim = null;
+    private DIOSim m_limitSwitchLowSim = new DIOSim(m_limitSwitchLow);
+    private DIOSim m_limitSwitchHighSim = new DIOSim(m_limitSwitchHigh);
     public Trigger atMax = new Trigger(m_limitSwitchLow::get).onTrue(this.run(this::stop));
     public Trigger atMin = new Trigger(m_limitSwitchHigh::get).onTrue(this.run(() -> {
         stop();
@@ -199,10 +200,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         // -> Elevator Sim
 
         if (RobotBase.isSimulation()) {
-            m_limitSwitchLowSim = new DIOSim(m_limitSwitchLow);
             SmartDashboard.putData("Elevator Low Limit Switch", m_limitSwitchLow);
-
-            m_limitSwitchHighSim = new DIOSim(m_limitSwitchHigh);
             SmartDashboard.putData("Elevator Low Limit Switch", m_limitSwitchHigh);
         }
 
@@ -233,8 +231,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     public Command setGoal(Position goal) {
         return runEnd(() -> reachGoal(goal.getPosition()), this::stop)
                 .until(new Trigger(() -> MathUtil.isNear(goal.getPosition(),
-                getCarriageHeight(),
-                ElevatorConstants.kPositionTolerance)));
+                        getCarriageHeight(),
+                        ElevatorConstants.kPositionTolerance)));
     }
 
     /**
@@ -332,9 +330,10 @@ public class ElevatorSubsystem extends SubsystemBase {
      * Update telemetry, including the mechanism visualization.
      */
     public void updateTelemetry() {
+        StationData data = StationData.getInstance();
         // Update elevator visualization with position
-        Constants.kElevatorCenterStage.setLength(m_encoder.getPosition());
-        Constants.kElevatorCarriage.setLength(getCarriageHeight());
+        data.kElevatorCarriage.setLength(
+                (ElevatorConstants.kElevatorHeight - ElevatorConstants.kCarriageGroundOffset) - getCarriageHeight());
     }
 
     /**
