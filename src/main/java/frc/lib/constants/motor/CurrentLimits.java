@@ -1,4 +1,4 @@
-package frc.lib.controls;
+package frc.lib.constants.motor;
 
 public class CurrentLimits {
     /* Current Limiting */

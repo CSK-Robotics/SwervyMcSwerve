@@ -18,7 +18,16 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Second;
-import frc.lib.controls.CurrentLimits;
+
+import frc.lib.constants.motor.CurrentLimits;
+import frc.lib.constants.motor.FeedForwardGains;
+import frc.lib.constants.motor.MotionConstraints;
+import frc.lib.constants.motor.MotorConfig;
+import frc.lib.constants.motor.SensorConfig;
+import frc.lib.constants.motor.SimulationDetails;
+import frc.lib.constants.subsystem.ArmConfig;
+import frc.lib.constants.subsystem.SubsystemConstants;
+import frc.lib.constants.subsystem.WheelConfig;
 import frc.lib.swerve.ModuleConstants;
 import frc.lib.swerve.SwerveInstances;
 
@@ -159,37 +168,95 @@ public final class Constants {
                 .in(MetersPerSecondPerSecond);
     }
 
-    public static final class CoralConstants {
-        public static final double kS = 0.0; // Example value, replace with actual value
-        public static final double kG = 0.0; // Example value, replace with actual value
-        public static final double kV = 0.0; // Example value, replace with actual value
-        public static final double kA = 0.0; // Example value, replace with actual value
-        public static final double kMaxVelocity = 0;
-        public static final double kMaxAcceleration = 0;
-        public static final CurrentLimits wheelLimits = new CurrentLimits(0, 0, 0.0, true);
-        public static final CurrentLimits angleLimits = new CurrentLimits(0, 0, 0.0, true);
-        public static final double kRampRate = 0;
-        public static final ClosedLoopConfig gains = new ClosedLoopConfig().pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot0);
-        public static final RegionOfInterest roi = new RegionOfInterest(8, 8, 16, 16);
-        public static final double kPositionTolerance = 0;
-        public static final double kCoralDetectTolerance = 0;
-        public static final double kCoralDetectDistance = 0;
+    public static final class CoralConstants extends SubsystemConstants {
+        private static final int kArmMotorID = 0;
+        private static final int kWheelMotorID = 0;
+        private static final int kLaserCANID = 0;
+        private static final double kArmGearboxRatio = 0.0; // Example value, replace with actual value
+        private static final double kArmMOI = 0.0; // Example value, replace with actual value
+        private static final double kArmExternalRatio = 1.0; // Example value, replace with actual value
+    
+        private static final double kWheelGearboxRatio = 0.0; // Example value, replace with actual value
+        private static final double kWheelMOI = 0.0; // Example value, replace with actual value
+        private static final double kWheelExternalRatio = 1.0; // Example value, replace with actual value
+        private static final double[] kStandardDevs = { 0.0, 0.1 }; // Example values, replace with actual values
+        private static final double kArmLength = 0.0; // Example value, replace with actual value
+        private static final FeedForwardGains kArmFeedForwardGains = new FeedForwardGains(0, 0, 0, 0); // Example values,
+                                                                                                       // replace with
+                                                                                                       // actual values
+        private static final double kMaxVelocity = 0;
+        private static final double kMaxAcceleration = 0;
+        private static final CurrentLimits kWheelLimits = new CurrentLimits(0, 0, 0.0, true);
+        private static final CurrentLimits kArmLimits = new CurrentLimits(0, 0, 0.0, true);
+        private static final double kArmRampRate = 0;
+        private static final double kArmPositionTolerance = 0;
+        private static final double kArmUpperLimit = 0;
+        private static final double kArmLowerLimit = 0;
+        private static final ClosedLoopConfig kArmGains = new ClosedLoopConfig().pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot0).outputRange(-1, 1);
+        private static final RegionOfInterest kROI = new RegionOfInterest(8, 8, 16, 16);
+        private static final double kCoralDetectTolerance = 0;
+        private static final double kCoralDetectDistance = 0;
+    
+        private CoralConstants() {
+            super(new ArmConfig(
+                new MotorConfig(kArmMotorID, kArmLimits, kArmFeedForwardGains,
+                        new MotionConstraints(kArmRampRate, kArmPositionTolerance,
+                                new TrapezoidProfile.Constraints(kMaxVelocity, kMaxAcceleration),
+                                kArmLowerLimit, kArmUpperLimit),
+                                kArmGains, new SimulationDetails(kArmGearboxRatio, kArmExternalRatio, kArmMOI, kStandardDevs)),
+                        kArmLength), new WheelConfig(
+                            new MotorConfig(kWheelMotorID, kWheelLimits, null, null, null,
+                                    new SimulationDetails(kWheelGearboxRatio, kWheelExternalRatio, kWheelMOI,
+                                            kStandardDevs)),
+                            new SensorConfig(kLaserCANID, kCoralDetectDistance, kCoralDetectTolerance, kROI)));
+        }
+
+        public static final CoralConstants instance = new CoralConstants();
     }
 
-    public static final class AlgaeConstants {
-        public static final double kS = 0.0; // Example value, replace with actual value
-        public static final double kG = 0.0; // Example value, replace with actual value
-        public static final double kV = 0.0; // Example value, replace with actual value
-        public static final double kA = 0.0; // Example value, replace with actual value
-        public static final double kMaxVelocity = 0;
-        public static final double kMaxAcceleration = 0;
-        public static final CurrentLimits wheelLimits = new CurrentLimits(0, 0, 0.0, true);
-        public static final CurrentLimits angleLimits = new CurrentLimits(0, 0, 0.0, true);
-        public static final double kRampRate = 0;
-        public static final ClosedLoopConfig gains = new ClosedLoopConfig().pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot0);
-        public static final RegionOfInterest roi = new RegionOfInterest(8, 8, 16, 16);
-        public static final double kPositionTolerance = 0;
-        public static final double kAlgaeDetectTolerance = 0;
-        public static final double kAlgaeDetectDistance = 0;
+    public static final class AlgaeConstants extends SubsystemConstants {
+        private static final int kArmMotorID = 0;
+        private static final int kWheelMotorID = 0;
+        private static final int kLaserCANID = 0;
+        private static final double kArmGearboxRatio = 0.0; // Example value, replace with actual value
+        private static final double kArmMOI = 0.0; // Example value, replace with actual value
+        private static final double kArmExternalRatio = 1.0; // Example value, replace with actual value
+    
+        private static final double kWheelGearboxRatio = 0.0; // Example value, replace with actual value
+        private static final double kWheelMOI = 0.0; // Example value, replace with actual value
+        private static final double kWheelExternalRatio = 1.0; // Example value, replace with actual value
+        private static final double[] kStandardDevs = { 0.0, 0.1 }; // Example values, replace with actual values
+        private static final double kArmLength = 0.0; // Example value, replace with actual value
+        private static final FeedForwardGains kArmFeedForwardGains = new FeedForwardGains(0, 0, 0, 0); // Example values,
+                                                                                                       // replace with
+                                                                                                       // actual values
+        private static final double kMaxVelocity = 0;
+        private static final double kMaxAcceleration = 0;
+        private static final CurrentLimits kWheelLimits = new CurrentLimits(0, 0, 0.0, true);
+        private static final CurrentLimits kArmLimits = new CurrentLimits(0, 0, 0.0, true);
+        private static final double kArmRampRate = 0;
+        private static final double kArmPositionTolerance = 0;
+        private static final double kArmUpperLimit = 0;
+        private static final double kArmLowerLimit = 0;
+        private static final ClosedLoopConfig kArmGains = new ClosedLoopConfig().pidf(0, 0, 0, 0, ClosedLoopSlot.kSlot0).outputRange(-1, 1);
+        private static final RegionOfInterest kROI = new RegionOfInterest(8, 8, 16, 16);
+        private static final double kAlgaeDetectTolerance = 0;
+        private static final double kAlgaeDetectDistance = 0;
+    
+        private  AlgaeConstants() {
+            super(new ArmConfig(
+                new MotorConfig(kArmMotorID, kArmLimits, kArmFeedForwardGains,
+                        new MotionConstraints(kArmRampRate, kArmPositionTolerance,
+                                new TrapezoidProfile.Constraints(kMaxVelocity, kMaxAcceleration),
+                                kArmLowerLimit, kArmUpperLimit),
+                                kArmGains, new SimulationDetails(kArmGearboxRatio, kArmExternalRatio, kArmMOI, kStandardDevs)),
+                        kArmLength), new WheelConfig(
+                            new MotorConfig(kWheelMotorID, kWheelLimits, null, null, null,
+                                    new SimulationDetails(kWheelGearboxRatio, kWheelExternalRatio, kWheelMOI,
+                                            kStandardDevs)),
+                            new SensorConfig(kLaserCANID, kAlgaeDetectDistance, kAlgaeDetectTolerance, kROI)));
+        }
+
+        public static final CoralConstants instance = new CoralConstants();
     }
 }

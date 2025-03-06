@@ -8,7 +8,7 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Subsystems.AlgaeSubsystem.Position;
+import frc.robot.Subsystems.EndEffectorSubsystem.FieldPosition;
 import frc.robot.Constants.Swerve;
 import frc.robot.Commands.Orchestrator;
 
@@ -32,7 +32,7 @@ public class DriverControls {
                 new Trigger(m_controller.leftBumper(m_loop).debounce(0.2)).onTrue(orchestrator.Climb()));
         m_triggers.put("RB: Release Algae",
                 new Trigger(m_controller.rightBumper(m_loop).debounce(0.2)).whileTrue(
-                        orchestrator.ScoreAlgae(Position.PROCESSOR, false, m_controller.rightBumper(m_loop))));
+                        orchestrator.ScoreAlgae(FieldPosition.PROCESSOR, false, m_controller.rightBumper(m_loop))));
         m_controller.start(m_loop).debounce(0.2).ifHigh(() -> m_fieldRelative = !m_fieldRelative);
         m_loop.bind(this::driveWithJoystick);
     }

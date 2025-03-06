@@ -8,6 +8,7 @@ import frc.robot.Subsystems.CoralSubsystem;
 import frc.robot.Subsystems.DrivetrainSubsystem;
 import frc.robot.Subsystems.ElevatorSubsystem;
 import frc.robot.Subsystems.ClimberSubsystem.Position;
+import frc.robot.Subsystems.EndEffectorSubsystem.FieldPosition;
 
 public class Orchestrator {
     public enum ReefPosition {
@@ -32,39 +33,39 @@ public class Orchestrator {
         m_climber = climber;
     }
 
-    public Command AimCoral(CoralSubsystem.Position position, boolean autoAlign) {
+    public Command AimCoral(FieldPosition position, boolean autoAlign) {
         return m_elevator.setGoal(ElevatorSubsystem.Position.valueOf(position.toString()))
-                .alongWith(m_coral.aimCoral(position));
+                .alongWith(m_coral.aim(position));
     }
 
     public Command IntakeCoral(boolean autoAlign) {
-        return AimCoral(CoralSubsystem.Position.HPSTATION, autoAlign).andThen(m_coral.intakeCoral());
+        return AimCoral(FieldPosition.HPSTATION, autoAlign).andThen(m_coral.intake(FieldPosition.HPSTATION));
     }
 
-    public Command ScoreCoral(CoralSubsystem.Position position, boolean autoAlign, BooleanEvent fire) {
+    public Command ScoreCoral(FieldPosition position, boolean autoAlign, BooleanEvent fire) {
         return AimCoral(position, autoAlign)
-                .andThen(m_coral.scoreCoral(position, fire));
+                .andThen(m_coral.score(position, fire));
     }
 
-    public Command AimAlgae(AlgaeSubsystem.Position position, boolean autoAlign) {
+    public Command AimAlgae(FieldPosition position, boolean autoAlign) {
         return m_elevator.setGoal(ElevatorSubsystem.Position.valueOf(position.toString()))
-                .alongWith(m_algae.aimAlgae(position));
+                .alongWith(m_algae.aim(position));
     }
 
-    public Command IntakeAlgae(AlgaeSubsystem.Position level, boolean autoAlign) {
-        if (level != AlgaeSubsystem.Position.L2
-                && level != AlgaeSubsystem.Position.L3) {
+    public Command IntakeAlgae(FieldPosition level, boolean autoAlign) {
+        if (level != FieldPosition.L2
+                && level != FieldPosition.L3) {
             return null;
         }
-        return AimAlgae(level, autoAlign).andThen(m_algae.intakeAlgae(level));
+        return AimAlgae(level, autoAlign).andThen(m_algae.intake(level));
     }
 
-    public Command ScoreAlgae(AlgaeSubsystem.Position bargeOrProcessor, boolean autoAlign, BooleanEvent fire) {
-        if (bargeOrProcessor != AlgaeSubsystem.Position.BARGE
-                && bargeOrProcessor != AlgaeSubsystem.Position.PROCESSOR) {
+    public Command ScoreAlgae(FieldPosition netOrProcessor, boolean autoAlign, BooleanEvent fire) {
+        if (netOrProcessor != FieldPosition.NET
+                && netOrProcessor != FieldPosition.PROCESSOR) {
             return null;
         }
-        return AimAlgae(bargeOrProcessor, autoAlign).andThen(m_algae.scoreAlgae(bargeOrProcessor, fire));
+        return AimAlgae(netOrProcessor, autoAlign).andThen(m_algae.score(netOrProcessor, fire));
     }
 
     public Command Climb() {
