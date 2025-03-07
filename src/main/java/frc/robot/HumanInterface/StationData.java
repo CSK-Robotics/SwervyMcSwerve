@@ -11,7 +11,7 @@ import frc.robot.Constants.CoralConstants;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Subsystems.AlgaeSubsystem;
 import frc.robot.Subsystems.CoralSubsystem;
-import frc.robot.Subsystems.EndEffectorSubsystem.FieldPosition;
+import frc.robot.Subsystems.Subsystem.FieldPosition;
 
 public class StationData {
     public final Mechanism2d sideRobotView = new Mechanism2d(0.0, 0.0 /* canvas size */);
@@ -23,25 +23,26 @@ public class StationData {
     public StationData(Orchestrator orchestrator) {
         kChassis = sideRobotView.getRoot("Chassis", 0.0, 0.0); // Elevator position on chassis
         kElevatorBase = kChassis.append(new MechanismLigament2d(
-                "Elevator Intermediate Stage", ElevatorConstants.kElevatorHeight, 90.0, 8.0, new Color8Bit(Color.kRed)));
+                "Elevator Intermediate Stage", ElevatorConstants.kElevatorConfig.kBaseHeight, 90.0, 8.0,
+                new Color8Bit(Color.kRed)));
         kElevatorCarriage = kElevatorBase.append(new MechanismLigament2d(
                 "Elevator",
-                ElevatorConstants.kElevatorHeight - ElevatorConstants.kCarriageGroundOffset, // carriage height
+                ElevatorConstants.kElevatorConfig.kBaseHeight - ElevatorConstants.kElevatorConfig.kCarriageGroundOffset, 
                 -90,
                 6,
                 new Color8Bit(Color.kRed)));
         kCoralMech = kElevatorCarriage.append(
                 new MechanismLigament2d(
                         "Coral",
-                        CoralConstants.instance.kArmConfig.kArmLength, // ArmConstants.kArmLength,
-                        CoralSubsystem.POSITIONS.get(FieldPosition.STARTING), // ArmConstants.kArmStartingAngle.in(Degrees),
+                        CoralConstants.kArmConfig.kArmLength, // ArmConstants.kArmLength,
+                        CoralSubsystem.ARM_POSITIONS.get(FieldPosition.STARTING), // ArmConstants.kArmStartingAngle.in(Degrees),
                         6,
                         new Color8Bit(Color.kYellow)));
         kAlgaeMech = kElevatorCarriage.append(
                 new MechanismLigament2d(
-                        "Coral",
-                        AlgaeConstants.instance.kArmConfig.kArmLength, // ArmConstants.kArmLength,
-                        AlgaeSubsystem.POSITIONS.get(FieldPosition.STARTING), // ArmConstants.kArmStartingAngle.in(Degrees),
+                        "Algae",
+                        AlgaeConstants.kArmConfig.kArmLength, // ArmConstants.kArmLength,
+                        AlgaeSubsystem.ARM_POSITIONS.get(FieldPosition.STARTING), // ArmConstants.kArmStartingAngle.in(Degrees),
                         6,
                         new Color8Bit(Color.kGreen)));
     }

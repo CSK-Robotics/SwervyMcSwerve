@@ -8,7 +8,7 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Subsystems.EndEffectorSubsystem.FieldPosition;
+import frc.robot.Subsystems.Subsystem.FieldPosition;
 import frc.robot.Constants.Swerve;
 import frc.robot.Commands.Orchestrator;
 

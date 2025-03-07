@@ -19,8 +19,8 @@ public class RobotMath {
          */
         public static Angle convertDistanceToRotations(Distance distance) {
             return Rotations.of(distance.in(Meters) /
-                    (ElevatorConstants.kElevatorDrumRadius * 2 * Math.PI) *
-                    ElevatorConstants.kElevatorGearing);
+                    (ElevatorConstants.kElevatorConfig.kDrumRadius * 2 * Math.PI) *
+                    ElevatorConstants.kElevatorConfig.kMotorConfig.kSimulation.kGearboxRatio);
         }
 
         /**
@@ -30,8 +30,8 @@ public class RobotMath {
          * @return {@link Distance} of the elevator.
          */
         public static Distance convertRotationsToDistance(Angle rotations) {
-            return Meters.of((rotations.in(Rotations) / ElevatorConstants.kElevatorGearing) *
-                    (ElevatorConstants.kElevatorDrumRadius * 2 * Math.PI));
+            return Meters.of((rotations.in(Rotations) / ElevatorConstants.kElevatorConfig.kMotorConfig.kSimulation.kGearboxRatio) *
+                    (ElevatorConstants.kElevatorConfig.kDrumRadius * 2 * Math.PI));
         }
 
     }

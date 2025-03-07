@@ -1,4 +1,4 @@
-package frc.lib.constants.motor;
+package frc.lib.configurations.motor;
 
 public class SimulationDetails {
     public final double kGearboxRatio;

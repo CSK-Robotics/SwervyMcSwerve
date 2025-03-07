@@ -1,4 +1,4 @@
-package frc.lib.constants.motor;
+package frc.lib.configurations.motor;
 
 public class FeedForwardGains {
     public final double kS;

@@ -8,7 +8,7 @@ import frc.robot.Subsystems.CoralSubsystem;
 import frc.robot.Subsystems.DrivetrainSubsystem;
 import frc.robot.Subsystems.ElevatorSubsystem;
 import frc.robot.Subsystems.ClimberSubsystem.Position;
-import frc.robot.Subsystems.EndEffectorSubsystem.FieldPosition;
+import frc.robot.Subsystems.Subsystem.FieldPosition;
 
 public class Orchestrator {
     public enum ReefPosition {
@@ -34,8 +34,7 @@ public class Orchestrator {
     }
 
     public Command AimCoral(FieldPosition position, boolean autoAlign) {
-        return m_elevator.setGoal(ElevatorSubsystem.Position.valueOf(position.toString()))
-                .alongWith(m_coral.aim(position));
+        return m_elevator.aim(position).alongWith(m_coral.aim(position));
     }
 
     public Command IntakeCoral(boolean autoAlign) {
@@ -43,13 +42,11 @@ public class Orchestrator {
     }
 
     public Command ScoreCoral(FieldPosition position, boolean autoAlign, BooleanEvent fire) {
-        return AimCoral(position, autoAlign)
-                .andThen(m_coral.score(position, fire));
+        return AimCoral(position, autoAlign).andThen(m_coral.score(position, fire));
     }
 
     public Command AimAlgae(FieldPosition position, boolean autoAlign) {
-        return m_elevator.setGoal(ElevatorSubsystem.Position.valueOf(position.toString()))
-                .alongWith(m_algae.aim(position));
+        return m_elevator.aim(position).alongWith(m_algae.aim(position));
     }
 
     public Command IntakeAlgae(FieldPosition level, boolean autoAlign) {
