@@ -17,6 +17,7 @@ import frc.robot.Constants.Swerve;
  * Represents a swerve drive style drivetrain.
  */
 public class DrivetrainSubsystem extends SubsystemBase {
+    // TODO: #18 Add simulation and visualization support to DrivetrainSubsystem
     private final SwerveModule m_frontLeft = new SwerveModule(Swerve.Modules.mod0Constants,
             "m_frontLeft");
     private final SwerveModule m_frontRight = new SwerveModule(Swerve.Modules.mod1Constants,
