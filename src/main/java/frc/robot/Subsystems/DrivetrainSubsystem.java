@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.AnalogGyro;
@@ -47,9 +46,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
             new Translation2d(-Swerve.wheelBase / 2.0,
                     -Swerve.trackWidth / 2.0));
 
-    // private final SwerveDrivePoseEstimator m_odometry;
-
-    private final SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
+    private final SwerveDrivePoseEstimator m_odometry = new SwerveDrivePoseEstimator(
             m_kinematics,
             m_gyro.getRotation2d(),
             new SwerveModulePosition[] {
@@ -57,7 +54,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                     m_frontRight.getPosition(),
                     m_backLeft.getPosition(),
                     m_backRight.getPosition()
-            });
+            }, Swerve.startingPose);
 
     public DrivetrainSubsystem() {
         m_gyro.reset();
@@ -134,7 +131,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public Pose2d getPose() {
-        return m_odometry.getPoseMeters();
+        return m_odometry.getEstimatedPosition();
     }
 
     public LimelightHelpers.PoseEstimate getLimelightPose() {
@@ -166,6 +163,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
      * Updates the field relative position of the robot.
      */
     private void updateOdometry() {
+        LimelightHelpers.PoseEstimate limelightPose = getLimelightPose();
+        m_odometry.addVisionMeasurement(limelightPose.pose, limelightPose.timestampSeconds);
         m_odometry.update(
                 m_gyro.getRotation2d(),
                 new SwerveModulePosition[] {

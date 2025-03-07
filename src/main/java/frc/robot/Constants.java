@@ -5,6 +5,7 @@ import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 
 import au.grapplerobotics.interfaces.LaserCanInterface.RegionOfInterest;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -34,6 +35,8 @@ public final class Constants {
     public static final double stickDeadband = 0.05;
 
     public static final class Swerve {
+        public static final Pose2d startingPose = new Pose2d(Units.inchesToMeters(0), Units.inchesToMeters(0),
+                new Rotation2d(0));
         // Gyro
         public static final boolean invertGyro = false; // Always ensure Gyro is CCW+ CW-
 
