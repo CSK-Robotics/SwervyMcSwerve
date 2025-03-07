@@ -13,8 +13,8 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
+import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.Swerve;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -63,7 +63,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     public void setupAutonomousConfigure() {
         System.out.println("Configuring autobuilder...");
         try {
-            Constants.pathplannerConfig = RobotConfig.fromGUISettings();
+            AutoConstants.pathplannerConfig = RobotConfig.fromGUISettings();
         } catch (Exception e) {
             // Handle exception as needed
             e.printStackTrace();
@@ -79,10 +79,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
                                                                       // individual module feedforwards
                 new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for
                                                 // holonomic drive trains
-                        new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                        new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+                        new PIDConstants(AutoConstants.XY_kP, AutoConstants.XY_kI, AutoConstants.XY_kD), // Translation PID constants
+                        new PIDConstants(AutoConstants.THETA_kP, AutoConstants.THETA_kI, AutoConstants.THETA_kD) // Rotation PID constants
                 ),
-                Constants.pathplannerConfig, // The robot configuration
+                AutoConstants.pathplannerConfig, // The robot configuration
                 () -> {
                     // Boolean supplier that controls when the path will be mirrored for the red
                     // alliance
