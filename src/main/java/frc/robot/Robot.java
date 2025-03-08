@@ -11,7 +11,8 @@ public class Robot extends TimedRobot {
   RobotContainer m_robotContainer = new RobotContainer();
 
   @Override
-  public void autonomousPeriodic() {
+  public void autonomousInit() {
+    m_robotContainer.configureAutonomous();
   }
 
   @Override
