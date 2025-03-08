@@ -227,8 +227,11 @@ public final class Constants {
 
 		public static final class WheelConfig extends FlywheelConfig {
 			// Wheel IDs
-			private static final int kWheelMotorID = 0;
-			private static final int kLaserCANID = 0;
+			private static final int kWheelMotorID = 17;
+			private static final int kLaserCANID = 18;
+
+			// Physical Constants
+			private static final double kCoralWheelDiameter = Units.inchesToMeters(4.0);
 
 			// Constraints
 			private static final CurrentLimits kWheelLimits = new CurrentLimits(0, 0, 0.0, true);
@@ -247,7 +250,8 @@ public final class Constants {
 			// WheelConfig
 			public WheelConfig() {
 				super(new MotorConfig(MotorType.NEOVORTEX, ControllerType.SPARK_FLEX, Map.of(kWheelMotorID, false),
-						kWheelLimits, null, null, null, kWheelSimulationDetails), kWheelSensorConfig);
+						kWheelLimits, null, null, null, kWheelSimulationDetails), kWheelSensorConfig,
+						kCoralWheelDiameter);
 			}
 		}
 
