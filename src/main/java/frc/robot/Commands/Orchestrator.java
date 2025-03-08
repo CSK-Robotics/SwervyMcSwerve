@@ -7,7 +7,6 @@ import frc.robot.Subsystems.ClimberSubsystem;
 import frc.robot.Subsystems.CoralSubsystem;
 import frc.robot.Subsystems.DrivetrainSubsystem;
 import frc.robot.Subsystems.ElevatorSubsystem;
-import frc.robot.Subsystems.ClimberSubsystem.Position;
 import frc.robot.Subsystems.Subsystem.FieldPosition;
 
 public class Orchestrator {
@@ -66,7 +65,7 @@ public class Orchestrator {
     }
 
     public Command Climb() {
-        return m_climber.setGoal(Position.LIFTED);
+        return m_climber.aim(FieldPosition.CAGE);
     }
 
     public Command Drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
