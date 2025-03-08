@@ -3,6 +3,7 @@ package frc.robot.Subsystems;
 import java.util.EnumMap;
 import java.util.Map;
 
+import frc.lib.Subsystem;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.HumanInterface.StationData;
 

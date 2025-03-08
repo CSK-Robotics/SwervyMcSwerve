@@ -2,12 +2,12 @@ package frc.robot.Commands;
 
 import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.lib.Subsystem.FieldPosition;
 import frc.robot.Subsystems.AlgaeSubsystem;
 import frc.robot.Subsystems.ClimberSubsystem;
 import frc.robot.Subsystems.CoralSubsystem;
 import frc.robot.Subsystems.DrivetrainSubsystem;
 import frc.robot.Subsystems.ElevatorSubsystem;
-import frc.robot.Subsystems.Subsystem.FieldPosition;
 
 public class Orchestrator {
     public enum ReefPosition {

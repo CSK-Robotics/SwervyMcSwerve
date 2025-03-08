@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import frc.lib.Subsystem.FieldPosition;
 import frc.robot.Commands.Orchestrator;
 import frc.robot.Constants.AlgaeConstants;
 import frc.robot.Constants.ClimberConstants;
@@ -13,7 +14,6 @@ import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Subsystems.AlgaeSubsystem;
 import frc.robot.Subsystems.ClimberSubsystem;
 import frc.robot.Subsystems.CoralSubsystem;
-import frc.robot.Subsystems.Subsystem.FieldPosition;
 
 public class StationData {
     public final Mechanism2d sideRobotView = new Mechanism2d(0.0, 0.0 /* canvas size */);

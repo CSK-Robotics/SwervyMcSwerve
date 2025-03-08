@@ -17,6 +17,7 @@ import static edu.wpi.first.units.Units.Millimeters;
 
 import java.util.Map;
 
+import frc.lib.Subsystem.FieldPosition;
 import frc.lib.configurations.motor.CurrentLimits;
 import frc.lib.configurations.motor.FeedForwardGains;
 import frc.lib.configurations.motor.MotionConstraints;
@@ -32,7 +33,6 @@ import frc.lib.swerve.ModuleConstants;
 import frc.lib.swerve.SwerveInstances;
 import frc.robot.Subsystems.ClimberSubsystem;
 import frc.robot.Subsystems.ElevatorSubsystem;
-import frc.robot.Subsystems.Subsystem.FieldPosition;
 
 public final class Constants {
 	public static final double stickDeadband = 0.05;

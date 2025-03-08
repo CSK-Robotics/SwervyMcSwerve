@@ -5,9 +5,11 @@ import java.util.Map;
 
 import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.lib.ISubsystem;
+import frc.lib.Subsystem;
+import frc.lib.Subsystem.FieldPosition;
 import frc.robot.Constants.AlgaeConstants;
 import frc.robot.HumanInterface.StationData;
-import frc.robot.Subsystems.Subsystem.FieldPosition;
 
 public class AlgaeSubsystem implements ISubsystem{
     // THESE ARE DUMMY VALUES!!!!! TODO: #8 Update algae pivot position values once determined.
@@ -42,7 +44,7 @@ public class AlgaeSubsystem implements ISubsystem{
     /**
      * Get the arm subsystem
      *
-     * @return {@link frc.robot.Subsystems.Subsystem}
+     * @return {@link frc.lib.Subsystem}
      */
     public Subsystem getArm() {
         return m_arm;
@@ -51,7 +53,7 @@ public class AlgaeSubsystem implements ISubsystem{
     /**
      * Get the wheel subsystem
      *
-     * @return {@link frc.robot.Subsystems.Subsystem}
+     * @return {@link frc.lib.Subsystem}
      */
     public Subsystem getWheel() {
         return m_wheel;
