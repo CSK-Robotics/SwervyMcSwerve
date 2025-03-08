@@ -328,17 +328,18 @@ public class Subsystem extends SubsystemBase implements ISubsystem {
      *
      * @param config Flywheel configuration
      */
-    private void configureFlywheel(FlywheelConfig config) {
+    private void configureFlywheel(FlywheelConfig constants) {
         // Configure Flywheel Specifics
-        MotorConfig motorConfig = config.kMotorConfig;
+        MotorConfig config = constants.kMotorConfig;
 
-        m_flywheelFeedForward = new SimpleMotorFeedforward(motorConfig.kFeedForwardGains.kS,
-                motorConfig.kFeedForwardGains.kV, motorConfig.kFeedForwardGains.kA, Robot.kDefaultPeriod);
+        m_flywheelFeedForward = new SimpleMotorFeedforward(config.kFeedForwardGains.kS,
+                config.kFeedForwardGains.kV, config.kFeedForwardGains.kA, Robot.kDefaultPeriod);
 
         if (RobotBase.isSimulation()) {
-            SimulationDetails sim = config.kMotorConfig.kSimulation;
-            m_flywheelSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(m_gearbox, sim.kMOI,
-                    sim.kExternalRatio), m_gearbox, sim.kStandardDevs);
+            SimulationDetails sim = constants.kMotorConfig.kSimulation;
+            m_flywheelSim = new FlywheelSim(LinearSystemId.createFlywheelSystem(m_gearbox,
+                    sim.kMass * Math.pow(constants.kWheelDiameter / 4, 2), sim.kExternalRatio), m_gearbox,
+                    sim.kStandardDevs);
         } else {
             m_flywheelSim = null;
         }
@@ -361,7 +362,8 @@ public class Subsystem extends SubsystemBase implements ISubsystem {
 
         if (RobotBase.isSimulation()) {
             SimulationDetails sim = config.kSimulation;
-            m_armSim = new SingleJointedArmSim(m_gearbox, sim.kExternalRatio, sim.kMOI,
+            m_armSim = new SingleJointedArmSim(m_gearbox, sim.kExternalRatio,
+                    sim.kMass * Math.pow(constants.kArmLength / 2, 2),
                     constants.kArmLength, config.kConstraints.kLowerLimit,
                     config.kConstraints.kUpperLimit, true, POSITIONS.get(FieldPosition.STARTING),
                     sim.kStandardDevs);
@@ -387,7 +389,7 @@ public class Subsystem extends SubsystemBase implements ISubsystem {
 
         if (RobotBase.isSimulation()) {
             SimulationDetails sim = config.kSimulation;
-            m_elevatorSim = new ElevatorSim(m_gearbox, sim.kExternalRatio, sim.kMOI,
+            m_elevatorSim = new ElevatorSim(m_gearbox, sim.kExternalRatio, sim.kMass,
                     constants.kDrumRadius, config.kConstraints.kLowerLimit,
                     config.kConstraints.kUpperLimit, true, POSITIONS.get(FieldPosition.STARTING),
                     sim.kStandardDevs);
@@ -490,8 +492,8 @@ public class Subsystem extends SubsystemBase implements ISubsystem {
      */
     public Command intake(FieldPosition position) {
         return runEnd(() -> {
-                runMotor(POSITIONS.get(position));
-            }, this::stop).until(sensorEvent(position));
+            runMotor(POSITIONS.get(position));
+        }, this::stop).until(sensorEvent(position));
     }
 
     /**
@@ -585,14 +587,15 @@ public class Subsystem extends SubsystemBase implements ISubsystem {
                     laser.setMeasurementPartialSim(
                             LaserCanInterface.LASERCAN_STATUS_VALID_MEASUREMENT,
                             (int) (constants.kSensorConfig.kDetectDistance
-                            - (0.1 * constants.kSensorConfig.kTolerance)),
+                                    - (0.1 * constants.kSensorConfig.kTolerance)),
                             0);
                 } else {
                     laser.setMeasurementFullSim(null);
                 }
                 break;
             case ABSOLUTE:
-                m_motorSim.getAbsoluteEncoderSim().setPosition(m_motorSim.getPosition() / (sim.kGearboxRatio * sim.kExternalRatio));
+                m_motorSim.getAbsoluteEncoderSim()
+                        .setPosition(m_motorSim.getPosition() / (sim.kGearboxRatio * sim.kExternalRatio));
                 break;
             case LIMIT_SWITCH:
                 if (m_motorSim.getPosition() > constants.kMotorConfig.kConstraints.kLowerLimit) {

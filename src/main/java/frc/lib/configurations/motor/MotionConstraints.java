@@ -9,10 +9,10 @@ public class MotionConstraints {
     public final double kUpperLimit;
     public final TrapezoidProfile.Constraints constraints;
 
-    public MotionConstraints(double kZeroingSpeed, double kRampRate, TrapezoidProfile.Constraints constraints, double kLowerLimit,
+    public MotionConstraints(double kZeroingSpeed, TrapezoidProfile.Constraints constraints, double kLowerLimit,
             double kUpperLimit) {
         this.kZeroingSpeed = kZeroingSpeed;
-        this.kRampRate = kRampRate;
+        this.kRampRate = constraints.maxVelocity / constraints.maxAcceleration;
         this.kLowerLimit = kLowerLimit;
         this.kUpperLimit = kUpperLimit;
         this.constraints = constraints;
