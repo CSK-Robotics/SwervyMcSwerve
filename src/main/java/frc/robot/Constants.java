@@ -13,6 +13,8 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 
+import static edu.wpi.first.units.Units.Millimeters;
+
 import java.util.Map;
 
 import frc.lib.configurations.motor.CurrentLimits;
@@ -143,13 +145,13 @@ public final class Constants {
 	// TODO: #13 Find the actual values for elevator
 	public static class ElevatorConstants extends LinearConfig {
 		// IDs
-		private static final int kElevatorMotorID = 0;
-		private static final int kSecondaryElevatorMotorID = 0;
+		private static final int kElevatorMotorID = 14;
+		private static final int kSecondaryElevatorMotorID = 15;
 
 		// Physical Constants
-		private static final double kElevatorCarriageGroundOffset = 0;
-		private static final double kElevatorHeight = 0.0;
-		private static final double kElevatorDrumRadius = Units.inchesToMeters(2.0);
+		private static final double kElevatorCarriageGroundOffset = Units.inchesToMeters(20.0);
+		private static final double kElevatorHeight = Units.inchesToMeters(34.0);
+		private static final double kElevatorDrumRadius = Units.inchesToMeters(1.757);
 
 		// Gains
 		private static final ClosedLoopConfig kElevatorGains = new ClosedLoopConfig()
@@ -159,20 +161,22 @@ public final class Constants {
 
 		// Simulation Details
 		private static final double[] kStandardDevs = { 0.0, 0.1 };
-		private static final SimulationDetails kElevatorSimulationDetails = new SimulationDetails(10.0, 1.0, 4.0,
+		private static final double kElevatorWeight = Units.lbsToKilograms(12.5);
+		private static final SimulationDetails kElevatorSimulationDetails = new SimulationDetails(15.0, 1.0,
+				kElevatorWeight,
 				kStandardDevs);
 
 		// Constraints
-		private static final double kZeroingSpeed = 0;
-		private static final double kTravelDistance = 0;
+		private static final double kZeroingSpeed = 0.25;
+		private static final double kTravelDistance = Units.inchesToMeters(26);
 		private static final MotionConstraints kElevatorConstraints = new MotionConstraints(kZeroingSpeed,
-				new TrapezoidProfile.Constraints(4, 8),
+				new TrapezoidProfile.Constraints(Units.inchesToMeters(20.0), Units.inchesToMeters(40.0)),
 				ElevatorSubsystem.POSITIONS.get(FieldPosition.STARTING), kTravelDistance);
-		private static final CurrentLimits kElevatorCurrentLimits = new CurrentLimits(0, 40, 0.1, true);
+		private static final CurrentLimits kElevatorCurrentLimits = new CurrentLimits(25, 40, 0.1, true);
 
 		// Sensor Constants
-		private static final double kPositionTolerance = 0;
-		private static final SensorConfig kElevatorSensorConfig = new SensorConfig(true, true, kPositionTolerance);
+		private static final double kPositionTolerance = Units.inchesToMeters(0.5);
+		private static final SensorConfig kElevatorSensorConfig = new SensorConfig(false, true, kPositionTolerance);
 
 		private ElevatorConstants() {
 			super(new MotorConfig(MotorType.NEO, ControllerType.SPARK_MAX,
@@ -190,10 +194,11 @@ public final class Constants {
 
 		public static final class ArmConfig extends AngularConfig {
 			// Arm IDs
-			private static final int kArmMotorID = 0;
+			private static final int kArmMotorID = 16;
 
 			// Physical Constants
-			private static final double kCoralArmLength = 0.0;
+			private static final double kCoralArmLength = Units.inchesToMeters(2.0);
+			private static final double kCoralArmWeight = Units.lbsToKilograms(3.8);
 
 			// Gains
 			private static final ClosedLoopConfig kArmGains = new ClosedLoopConfig()
@@ -202,20 +207,20 @@ public final class Constants {
 					0.173);
 
 			// Simulation Details
-			private static final SimulationDetails kArmSimulationDetails = new SimulationDetails(10.0, 1.0, 4.0,
-					kStandardDevs);
+			private static final SimulationDetails kArmSimulationDetails = new SimulationDetails(9.0, 1.0,
+					kCoralArmWeight, kStandardDevs);
 
 			// Constraints
-			private static final double kZeroingSpeed = 0;
-			private static final double kMaxAngle = 0;
+			private static final double kZeroingSpeed = 0.25;
+			private static final double kMaxAngle = Units.degreesToRadians(180.0);
 			private static final MotionConstraints kArmConstraints = new MotionConstraints(kZeroingSpeed,
-					new TrapezoidProfile.Constraints(4, 8),
+					new TrapezoidProfile.Constraints(Units.degreesToRadians(90.0), Units.degreesToRadians(180.0)),
 					ClimberSubsystem.POSITIONS.get(FieldPosition.STARTING), kMaxAngle);
 			private static final CurrentLimits kArmCurrentLimits = new CurrentLimits(0, 40, 0.1, true);
 
 			// Sensor Constants
-			private static final double kPositionTolerance = 0;
-			private static final SensorConfig kArmSensorConfig = new SensorConfig(0, 0, kPositionTolerance);
+			private static final double kPositionTolerance = Units.degreesToRadians(0.5);
+			private static final SensorConfig kArmSensorConfig = new SensorConfig(kMaxAngle, 0, kPositionTolerance);
 
 			// ArmConfig
 			private ArmConfig() {
@@ -232,20 +237,21 @@ public final class Constants {
 
 			// Physical Constants
 			private static final double kCoralWheelDiameter = Units.inchesToMeters(4.0);
+			private static final double kCoralWheelWeight = Units.lbsToKilograms(1.2);
 
 			// Constraints
-			private static final CurrentLimits kWheelLimits = new CurrentLimits(0, 0, 0.0, true);
+			private static final CurrentLimits kWheelLimits = new CurrentLimits(25, 40, 0.0, true);
 
 			// Sensor Constants
 			private static final RegionOfInterest kROI = new RegionOfInterest(8, 8, 16, 16);
-			private static final double kCoralDetectTolerance = 0;
-			private static final double kCoralDetectDistance = 0;
+			private static final double kCoralDetectTolerance = Millimeters.fromBaseUnits(Units.inchesToMeters(0.25));
+			private static final double kCoralDetectDistance = Millimeters.fromBaseUnits(Units.inchesToMeters(0.5));
 			private static final SensorConfig kWheelSensorConfig = new SensorConfig(kLaserCANID, kCoralDetectDistance,
 					kCoralDetectTolerance, kROI);
 
 			// Simulation Details
-			private static final SimulationDetails kWheelSimulationDetails = new SimulationDetails(0.0, 0.0, 0.0,
-					kStandardDevs);
+			private static final SimulationDetails kWheelSimulationDetails = new SimulationDetails(1.0, 1.0,
+					kCoralWheelWeight, kStandardDevs);
 
 			// WheelConfig
 			public WheelConfig() {
@@ -265,10 +271,11 @@ public final class Constants {
 
 		public static final class ArmConfig extends AngularConfig {
 			// Arm IDs
-			private static final int kArmMotorID = 0;
+			private static final int kArmMotorID = 19;
 
 			// Physical Constants
-			private static final double kAlgaeArmLength = 0.0;
+			private static final double kAlgaeArmLength = Units.inchesToMeters(14.0);
+			private static final double kAlgaeArmWeight = Units.lbsToKilograms(2.5);
 
 			// Gains
 			private static final ClosedLoopConfig kArmGains = new ClosedLoopConfig()
@@ -277,20 +284,21 @@ public final class Constants {
 					0.173);
 
 			// Simulation Details
-			private static final SimulationDetails kArmSimulationDetails = new SimulationDetails(10.0, 1.0, 4.0,
+			private static final SimulationDetails kArmSimulationDetails = new SimulationDetails(25.0, 1.0,
+					kAlgaeArmWeight,
 					kStandardDevs);
 
 			// Constraints
-			private static final double kZeroingSpeed = 0;
-			private static final double kMaxAngle = 0;
+			private static final double kZeroingSpeed = 0.25;
+			private static final double kMaxAngle = Units.degreesToRadians(180.0);
 			private static final MotionConstraints kArmConstraints = new MotionConstraints(kZeroingSpeed,
-					new TrapezoidProfile.Constraints(4, 8),
+					new TrapezoidProfile.Constraints(Units.degreesToRadians(90.0), Units.degreesToRadians(180.0)),
 					ClimberSubsystem.POSITIONS.get(FieldPosition.STARTING), kMaxAngle);
-			private static final CurrentLimits kArmCurrentLimits = new CurrentLimits(0, 40, 0.1, true);
+			private static final CurrentLimits kArmCurrentLimits = new CurrentLimits(35, 40, 0.1, true);
 
 			// Sensor Constants
-			private static final double kPositionTolerance = 0;
-			private static final SensorConfig kArmSensorConfig = new SensorConfig(0, 0, kPositionTolerance);
+			private static final double kPositionTolerance = Units.degreesToRadians(0.5);
+			private static final SensorConfig kArmSensorConfig = new SensorConfig(kMaxAngle, 0, kPositionTolerance);
 
 			// ArmConfig
 			private ArmConfig() {
@@ -302,27 +310,32 @@ public final class Constants {
 
 		public static final class WheelConfig extends FlywheelConfig {
 			// Wheel IDs
-			private static final int kWheelMotorID = 0;
-			private static final int kLaserCANID = 0;
+			private static final int kWheelMotorID = 20;
+			private static final int kLaserCANID = 21;
+
+			// Physical Constants
+			private static final double kAlgaeWheelDiameter = Units.inchesToMeters(4.0);
+			private static final double kAlgaeWheelWeight = Units.lbsToKilograms(1.2);
 
 			// Constraints
-			private static final CurrentLimits kWheelLimits = new CurrentLimits(0, 0, 0.0, true);
+			private static final CurrentLimits kWheelLimits = new CurrentLimits(20, 35, 0.0, true);
 
 			// Sensor Constants
-		private static final RegionOfInterest kROI = new RegionOfInterest(8, 8, 16, 16);
-		private static final double kAlgaeDetectTolerance = 0;
-		private static final double kAlgaeDetectDistance = 0;
+			private static final RegionOfInterest kROI = new RegionOfInterest(8, 8, 16, 16);
+			private static final double kAlgaeDetectTolerance = Millimeters.fromBaseUnits(Units.inchesToMeters(0.25));
+			private static final double kAlgaeDetectDistance = Millimeters.fromBaseUnits(Units.inchesToMeters(0.5));
 			private static final SensorConfig kWheelSensorConfig = new SensorConfig(kLaserCANID, kAlgaeDetectDistance,
 					kAlgaeDetectTolerance, kROI);
 
 			// Simulation Details
-			private static final SimulationDetails kWheelSimulationDetails = new SimulationDetails(0.0, 0.0, 0.0,
-					kStandardDevs);
+			private static final SimulationDetails kWheelSimulationDetails = new SimulationDetails(1.0, 1.0,
+					kAlgaeWheelWeight, kStandardDevs);
 
 			// WheelConfig
 			public WheelConfig() {
 				super(new MotorConfig(MotorType.NEOVORTEX, ControllerType.SPARK_FLEX, Map.of(kWheelMotorID, false),
-						kWheelLimits, null, null, null, kWheelSimulationDetails), kWheelSensorConfig);
+						kWheelLimits, null, null, null, kWheelSimulationDetails), kWheelSensorConfig,
+						kAlgaeWheelDiameter);
 			}
 		}
 
@@ -333,11 +346,12 @@ public final class Constants {
 	// TODO: #17 Find the actual values for Climber
 	public static final class ClimberConstants extends AngularConfig {
 		// IDs
-		private static final int kArmMotorID = 0;
-		private static final int kSecondaryArmMotorID = 0;
+		private static final int kArmMotorID = 22;
+		private static final int kSecondaryArmMotorID = 23;
 
 		// Physical Constants
-		private static final double kClimberArmLength = 0.0;
+		private static final double kClimberArmLength = Units.inchesToMeters(5.0);
+		private static final double kClimberArmWeight = Units.lbsToKilograms(0.8);
 
 		// Gains
 		private static final ClosedLoopConfig kArmGains = new ClosedLoopConfig()
@@ -347,20 +361,20 @@ public final class Constants {
 
 		// Simulation Details
 		private static final double[] kStandardDevs = { 0.0, 0.1 };
-		private static final SimulationDetails kArmSimulationDetails = new SimulationDetails(10.0, 1.0, 4.0,
-				kStandardDevs);
+		private static final SimulationDetails kArmSimulationDetails = new SimulationDetails(225.0, 1.0,
+				kClimberArmWeight, kStandardDevs);
 
 		// Constraints
-		private static final double kZeroingSpeed = 0;
-		private static final double kMaxAngle = 0;
+		private static final double kZeroingSpeed = 0.25;
+		private static final double kMaxAngle = Units.degreesToRadians(270.0);
 		private static final MotionConstraints kArmConstraints = new MotionConstraints(kZeroingSpeed,
-				new TrapezoidProfile.Constraints(4, 8),
+				new TrapezoidProfile.Constraints(Units.degreesToRadians(90.0), Units.degreesToRadians(180.0)),
 				ClimberSubsystem.POSITIONS.get(FieldPosition.STARTING), kMaxAngle);
-		private static final CurrentLimits kArmCurrentLimits = new CurrentLimits(0, 40, 0.1, true);
+		private static final CurrentLimits kArmCurrentLimits = new CurrentLimits(30, 40, 0.1, true);
 
 		// Sensor Constants
-		private static final double kPositionTolerance = 0;
-		private static final SensorConfig kArmSensorConfig = new SensorConfig(0, 0, kPositionTolerance);
+		private static final double kPositionTolerance = Units.degreesToRadians(0.5);
+		private static final SensorConfig kArmSensorConfig = new SensorConfig(kMaxAngle, 0, kPositionTolerance);
 
 		// ClimberConfig
 		private ClimberConstants() {
