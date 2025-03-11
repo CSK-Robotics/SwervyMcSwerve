@@ -2,7 +2,7 @@ package frc.robot.Commands;
 
 import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.Subsystem.FieldPosition;
+import frc.lib.subsystems.Subsystem.FieldPosition;
 import frc.robot.Subsystems.AlgaeSubsystem;
 import frc.robot.Subsystems.ClimberSubsystem;
 import frc.robot.Subsystems.CoralSubsystem;

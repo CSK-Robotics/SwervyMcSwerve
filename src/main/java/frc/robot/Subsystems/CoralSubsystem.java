@@ -5,40 +5,52 @@ import java.util.Map;
 
 import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.ISubsystem;
-import frc.lib.Subsystem;
-import frc.lib.Subsystem.FieldPosition;
+import frc.lib.subsystems.AngularSubsystem;
+import frc.lib.subsystems.ISubsystem;
+import frc.lib.subsystems.LinearSubsystem;
+import frc.lib.subsystems.Subsystem;
+import frc.lib.subsystems.Subsystem.FieldPosition;
+import frc.lib.subsystems.Subsystem.FieldPositionValue;
 import frc.robot.Constants.CoralConstants;
 import frc.robot.HumanInterface.StationData;
 
-
 public class CoralSubsystem implements ISubsystem {
-    // THESE ARE DUMMY VALUES!!!!! TODO: #10 Update coral arm position values once determined.
-    public static final Map<FieldPosition, Double> ARM_POSITIONS;
-    public static final Map<Subsystem.FieldPosition, Double> WHEEL_POSITIONS;
+    // THESE ARE DUMMY VALUES!!!!! TODO: #10 Update coral arm position values once
+    // determined.
+    public static final Map<FieldPosition, FieldPositionValue> ARM_POSITIONS;
+    public static final Map<Subsystem.FieldPosition, FieldPositionValue> WHEEL_POSITIONS;
     static {
         ARM_POSITIONS = new EnumMap<>(FieldPosition.class);
-        ARM_POSITIONS.put(FieldPosition.STARTING, 0.0);
-        ARM_POSITIONS.put(FieldPosition.DRIVING, 0.0);
-        ARM_POSITIONS.put(FieldPosition.HPSTATION, 0.0);
-        ARM_POSITIONS.put(FieldPosition.L1, 0.0);
-        ARM_POSITIONS.put(FieldPosition.L2, 0.0);
-        ARM_POSITIONS.put(FieldPosition.L3, 0.0);
-        ARM_POSITIONS.put(FieldPosition.L4, 0.0);
+        for (FieldPosition pos : FieldPosition.values()) {
+            ARM_POSITIONS.put(pos, new FieldPositionValue());
+        }
 
         WHEEL_POSITIONS = new EnumMap<>(Subsystem.FieldPosition.class);
-        WHEEL_POSITIONS.put(Subsystem.FieldPosition.STARTING, 0.0);
-        WHEEL_POSITIONS.put(Subsystem.FieldPosition.DRIVING, 0.0);
-        WHEEL_POSITIONS.put(Subsystem.FieldPosition.PROCESSOR, 0.5);
-        WHEEL_POSITIONS.put(Subsystem.FieldPosition.L2, -0.5);
-        WHEEL_POSITIONS.put(Subsystem.FieldPosition.L3, -0.5);
-        WHEEL_POSITIONS.put(Subsystem.FieldPosition.NET, 0.8);
+        for (FieldPosition pos : FieldPosition.values()) {
+            WHEEL_POSITIONS.put(pos, new FieldPositionValue());
+        }
     }
 
     private final Subsystem m_arm, m_wheel;
+
     public CoralSubsystem() {
-        m_arm = new Subsystem(CoralConstants.kArmConfig, ARM_POSITIONS, StationData.getInstance().kCoralMech);
-        m_wheel = new Subsystem(CoralConstants.kWheelConfig, WHEEL_POSITIONS, null);
+        ARM_POSITIONS.get(FieldPosition.STARTING).accept(0.0);
+        ARM_POSITIONS.get(FieldPosition.DRIVING).accept(0.0);
+        ARM_POSITIONS.get(FieldPosition.HPSTATION).accept(0.0);
+        ARM_POSITIONS.get(FieldPosition.L1).accept(0.0);
+        ARM_POSITIONS.get(FieldPosition.L2).accept(0.0);
+        ARM_POSITIONS.get(FieldPosition.L3).accept(0.0);
+        ARM_POSITIONS.get(FieldPosition.L4).accept(0.0);
+
+        WHEEL_POSITIONS.get(Subsystem.FieldPosition.STARTING).accept(0.0);
+        WHEEL_POSITIONS.get(Subsystem.FieldPosition.DRIVING).accept(0.0);
+        WHEEL_POSITIONS.get(Subsystem.FieldPosition.PROCESSOR).accept(0.5);
+        WHEEL_POSITIONS.get(Subsystem.FieldPosition.L2).accept(-0.5);
+        WHEEL_POSITIONS.get(Subsystem.FieldPosition.L3).accept(-0.5);
+        WHEEL_POSITIONS.get(Subsystem.FieldPosition.NET).accept(0.8);
+
+        m_arm = new AngularSubsystem(CoralConstants.kAngularConfig, ARM_POSITIONS, StationData.getInstance().kCoralMech);
+        m_wheel = new LinearSubsystem(CoralConstants.kWheelConfig, WHEEL_POSITIONS, null);
     }
 
     // Getters
@@ -46,7 +58,7 @@ public class CoralSubsystem implements ISubsystem {
     /**
      * Get the arm subsystem
      *
-     * @return {@link frc.lib.Subsystem}
+     * @return {@link frc.lib.subsystems.Subsystem}
      */
     public Subsystem getArm() {
         return m_arm;
@@ -55,7 +67,7 @@ public class CoralSubsystem implements ISubsystem {
     /**
      * Get the wheel subsystem
      *
-     * @return {@link frc.lib.Subsystem}
+     * @return {@link frc.lib.subsystems.Subsystem}
      */
     public Subsystem getWheel() {
         return m_wheel;

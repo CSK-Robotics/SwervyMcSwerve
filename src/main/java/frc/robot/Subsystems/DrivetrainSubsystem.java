@@ -5,15 +5,21 @@ package frc.robot.Subsystems;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.event.BooleanEvent;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.LimelightHelpers;
+import frc.lib.configurations.subsystem.ModuleConfig;
+import frc.lib.subsystems.ISubsystem;
+import frc.lib.subsystems.Subsystem.FieldPosition;
 import frc.lib.swerve.SwerveModule;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.Swerve;
@@ -24,31 +30,17 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 /** Represents a swerve drive style drivetrain. */
-public class DrivetrainSubsystem extends SubsystemBase {
+public class DrivetrainSubsystem extends SubsystemBase implements ISubsystem {
     // TODO: #18 Add simulation and visualization support to DrivetrainSubsystem
-    private final SwerveModule m_frontLeft = new SwerveModule(Swerve.Modules.mod0Constants,
-            "m_frontLeft");
-    private final SwerveModule m_frontRight = new SwerveModule(Swerve.Modules.mod1Constants,
-            "m_frontRight");
-    private final SwerveModule m_backLeft = new SwerveModule(Swerve.Modules.mod2Constants,
-            "m_backLeft");
-    private final SwerveModule m_backRight = new SwerveModule(Swerve.Modules.mod3Constants,
-            "m_backRight");
+    private final SwerveModule m_frontLeft = new SwerveModule(Swerve.frontLeftConstants);
+    private final SwerveModule m_frontRight = new SwerveModule(Swerve.frontRightConstants);
+    private final SwerveModule m_backLeft = new SwerveModule(Swerve.backLeftConstants);
+    private final SwerveModule m_backRight = new SwerveModule(Swerve.backRightConstants);
 
     private final AnalogGyro m_gyro = new AnalogGyro(0);
 
-    private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(
-            new Translation2d(Swerve.wheelBase / 2.0,
-                    Swerve.trackWidth / 2.0),
-            new Translation2d(Swerve.wheelBase / 2.0,
-                    -Swerve.trackWidth / 2.0),
-            new Translation2d(-Swerve.wheelBase / 2.0,
-                    Swerve.trackWidth / 2.0),
-            new Translation2d(-Swerve.wheelBase / 2.0,
-                    -Swerve.trackWidth / 2.0));
-
     private final SwerveDrivePoseEstimator m_odometry = new SwerveDrivePoseEstimator(
-            m_kinematics,
+            Swerve.kKinematics,
             m_gyro.getRotation2d(),
             new SwerveModulePosition[] {
                     m_frontLeft.getPosition(),
@@ -57,8 +49,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
                     m_backRight.getPosition()
             }, Swerve.startingPose);
 
+    // field2d
+    public final Field2d m_field;
+
     public DrivetrainSubsystem() {
         m_gyro.reset();
+
+        // field2d
+        m_field = new Field2d();
+        SmartDashboard.putData(m_field);
     }
 
     public void setupAutonomousConfigure() {
@@ -73,15 +72,21 @@ public class DrivetrainSubsystem extends SubsystemBase {
         // Configure AutoBuilder last
         AutoBuilder.configure(
                 this::getPose, // Robot pose supplier
-                this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
+                this::resetPose, // Method to reset odometry (will be called if your auto has a starting
+                                 // pose)
                 this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-                (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given ROBOT
-                                                                      // RELATIVE ChassisSpeeds. Also optionally outputs
+                (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the
+                                                                      // robot given ROBOT
+                                                                      // RELATIVE ChassisSpeeds. Also
+                                                                      // optionally outputs
                                                                       // individual module feedforwards
-                new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for
+                new PPHolonomicDriveController( // PPHolonomicController is the built in path following
+                                                // controller for
                                                 // holonomic drive trains
-                        new PIDConstants(AutoConstants.XY_kP, AutoConstants.XY_kI, AutoConstants.XY_kD), // Translation PID constants
-                        new PIDConstants(AutoConstants.THETA_kP, AutoConstants.THETA_kI, AutoConstants.THETA_kD) // Rotation PID constants
+                        new PIDConstants(AutoConstants.XY_kP, AutoConstants.XY_kI,
+                                AutoConstants.XY_kD), // Translation PID constants
+                        new PIDConstants(AutoConstants.THETA_kP, AutoConstants.THETA_kI,
+                                AutoConstants.THETA_kD) // Rotation PID constants
                 ),
                 AutoConstants.pathplannerConfig, // The robot configuration
                 () -> {
@@ -111,23 +116,22 @@ public class DrivetrainSubsystem extends SubsystemBase {
      */
     public void drive(
             double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
-
         ChassisSpeeds desiredChassisSpeeds = fieldRelative
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, m_gyro.getRotation2d())
                 : new ChassisSpeeds(xSpeed, ySpeed, rot);
-        SwerveModuleState[] swerveModuleStates = m_kinematics.toSwerveModuleStates(desiredChassisSpeeds);
+        SwerveModuleState[] swerveModuleStates = Swerve.kKinematics.toSwerveModuleStates(desiredChassisSpeeds);
 
         for (SwerveModuleState swerveModuleState : swerveModuleStates) {
             swerveModuleState.angle = swerveModuleState.angle.times(-1);
         }
 
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates,
-                Swerve.instanceConstants.driveFreeSpeed());
+                ModuleConfig.SwerveWheelConfig.kMaxSpeed);
 
-        m_frontLeft.setDesiredState(swerveModuleStates[0], "frontLeft", true);
-        m_frontRight.setDesiredState(swerveModuleStates[1], "frontRight", true);
-        m_backLeft.setDesiredState(swerveModuleStates[2], "backLeft", true);
-        m_backRight.setDesiredState(swerveModuleStates[3], "backRight", true);
+        m_frontLeft.setDesiredState(swerveModuleStates[0], "frontLeft");
+        m_frontRight.setDesiredState(swerveModuleStates[1], "frontRight");
+        m_backLeft.setDesiredState(swerveModuleStates[2], "backLeft");
+        m_backRight.setDesiredState(swerveModuleStates[3], "backRight");
 
     }
 
@@ -150,7 +154,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public ChassisSpeeds getRobotRelativeSpeeds() {
-        return m_kinematics.toChassisSpeeds(m_frontLeft.getState(),
+        return Swerve.kKinematics.toChassisSpeeds(m_frontLeft.getState(),
                 m_frontRight.getState(),
                 m_backLeft.getState(),
                 m_backRight.getState());
@@ -179,6 +183,31 @@ public class DrivetrainSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         updateOdometry();
+        m_field.setRobotPose(getPose());
+    }
+
+    @Override
+    public Command aim(FieldPosition goal) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'aim'");
+    }
+
+    @Override
+    public Command score(FieldPosition goal, BooleanEvent fire) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'score'");
+    }
+
+    @Override
+    public Command intake(FieldPosition position) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'intake'");
+    }
+
+    @Override
+    public Command zero() {
+        return m_frontLeft.zero().alongWith(m_frontRight.zero()).alongWith(m_backLeft.zero())
+                .alongWith(m_backRight.zero());
     }
 
 }

@@ -5,38 +5,51 @@ import java.util.Map;
 
 import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.ISubsystem;
-import frc.lib.Subsystem;
-import frc.lib.Subsystem.FieldPosition;
+import frc.lib.subsystems.AngularSubsystem;
+import frc.lib.subsystems.ISubsystem;
+import frc.lib.subsystems.LinearSubsystem;
+import frc.lib.subsystems.Subsystem;
+import frc.lib.subsystems.Subsystem.FieldPosition;
+import frc.lib.subsystems.Subsystem.FieldPositionValue;
 import frc.robot.Constants.AlgaeConstants;
 import frc.robot.HumanInterface.StationData;
 
-public class AlgaeSubsystem implements ISubsystem{
-    // THESE ARE DUMMY VALUES!!!!! TODO: #8 Update algae pivot position values once determined.
-    public static final Map<Subsystem.FieldPosition, Double> ARM_POSITIONS;
-    public static final Map<Subsystem.FieldPosition, Double> WHEEL_POSITIONS;
+public class AlgaeSubsystem implements ISubsystem {
+    public static final Map<FieldPosition, FieldPositionValue> ARM_POSITIONS;
+    public static final Map<Subsystem.FieldPosition, FieldPositionValue> WHEEL_POSITIONS;
     static {
-        ARM_POSITIONS = new EnumMap<>(Subsystem.FieldPosition.class);
-        ARM_POSITIONS.put(Subsystem.FieldPosition.STARTING, 0.0);
-        ARM_POSITIONS.put(Subsystem.FieldPosition.DRIVING, 0.0);
-        ARM_POSITIONS.put(Subsystem.FieldPosition.PROCESSOR, 0.0);
-        ARM_POSITIONS.put(Subsystem.FieldPosition.L2, 0.0);
-        ARM_POSITIONS.put(Subsystem.FieldPosition.L3, 0.0);
-        ARM_POSITIONS.put(Subsystem.FieldPosition.NET, 0.0);
+        ARM_POSITIONS = new EnumMap<>(FieldPosition.class);
+        for (FieldPosition pos : FieldPosition.values()) {
+            ARM_POSITIONS.put(pos, new FieldPositionValue());
+        }
 
         WHEEL_POSITIONS = new EnumMap<>(Subsystem.FieldPosition.class);
-        WHEEL_POSITIONS.put(Subsystem.FieldPosition.STARTING, 0.0);
-        WHEEL_POSITIONS.put(Subsystem.FieldPosition.DRIVING, 0.0);
-        WHEEL_POSITIONS.put(Subsystem.FieldPosition.PROCESSOR, 0.5);
-        WHEEL_POSITIONS.put(Subsystem.FieldPosition.L2, -0.5);
-        WHEEL_POSITIONS.put(Subsystem.FieldPosition.L3, -0.5);
-        WHEEL_POSITIONS.put(Subsystem.FieldPosition.NET, 0.8);
+        for (FieldPosition pos : FieldPosition.values()) {
+            WHEEL_POSITIONS.put(pos, new FieldPositionValue());
+        }
     }
 
     private final Subsystem m_arm, m_wheel;
+
     public AlgaeSubsystem() {
-        m_arm = new Subsystem(AlgaeConstants.kArmConfig, ARM_POSITIONS, StationData.getInstance().kAlgaeMech);
-        m_wheel = new Subsystem(AlgaeConstants.kWheelConfig, WHEEL_POSITIONS, null);
+        m_arm = new AngularSubsystem(AlgaeConstants.kArmConfig, ARM_POSITIONS, StationData.getInstance().kAlgaeMech);
+        m_wheel = new LinearSubsystem(AlgaeConstants.kWheelConfig, WHEEL_POSITIONS, null);
+
+        // THESE ARE DUMMY VALUES!!!!! TODO: #8 Update algae pivot position values once
+        // determined.
+        ARM_POSITIONS.get(FieldPosition.STARTING).accept(null);
+        ARM_POSITIONS.get(FieldPosition.DRIVING).accept(null);
+        ARM_POSITIONS.get(FieldPosition.PROCESSOR).accept(null);
+        ARM_POSITIONS.get(FieldPosition.L2).accept(null);
+        ARM_POSITIONS.get(FieldPosition.L3).accept(null);
+        ARM_POSITIONS.get(FieldPosition.NET).accept(null);
+
+        WHEEL_POSITIONS.get(Subsystem.FieldPosition.STARTING).accept(null);
+        WHEEL_POSITIONS.get(Subsystem.FieldPosition.DRIVING).accept(null);
+        WHEEL_POSITIONS.get(Subsystem.FieldPosition.PROCESSOR).accept(null);
+        WHEEL_POSITIONS.get(Subsystem.FieldPosition.L2).accept(null);
+        WHEEL_POSITIONS.get(Subsystem.FieldPosition.L3).accept(null);
+        WHEEL_POSITIONS.get(Subsystem.FieldPosition.NET).accept(null);
     }
 
     // Getters
@@ -44,7 +57,7 @@ public class AlgaeSubsystem implements ISubsystem{
     /**
      * Get the arm subsystem
      *
-     * @return {@link frc.lib.Subsystem}
+     * @return {@link frc.lib.subsystems.Subsystem}
      */
     public Subsystem getArm() {
         return m_arm;
@@ -53,7 +66,7 @@ public class AlgaeSubsystem implements ISubsystem{
     /**
      * Get the wheel subsystem
      *
-     * @return {@link frc.lib.Subsystem}
+     * @return {@link frc.lib.subsystems.Subsystem}
      */
     public Subsystem getWheel() {
         return m_wheel;

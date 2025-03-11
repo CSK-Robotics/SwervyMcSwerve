@@ -1,4 +1,4 @@
-package frc.lib.configurations.motor;
+package frc.lib.configurations.sensors;
 
 import au.grapplerobotics.interfaces.LaserCanInterface.RegionOfInterest;
 
@@ -8,7 +8,7 @@ public class SensorConfig {
     }
 
     // Laser
-    public final int laserCANID;
+    public final int canID;
     public final RegionOfInterest kROI;
     public final double kDetectDistance;
 
@@ -27,9 +27,9 @@ public class SensorConfig {
     /*
      * Constructor for laserCAN sensor configuration
      */
-    public SensorConfig(int laserCANID, double detectDistance, double detectTolerance, RegionOfInterest roi) {
+    public SensorConfig(int canID, double detectDistance, double detectTolerance, RegionOfInterest roi) {
         this.kType = Type.LASER;
-        this.laserCANID = laserCANID;
+        this.canID = canID;
         this.kDetectDistance = detectDistance;
         this.kTolerance = detectTolerance;
         this.kROI = roi;
@@ -49,7 +49,23 @@ public class SensorConfig {
         this.kReverseLimit = reverseLimit;
         this.kTolerance = positionTolerance;
 
-        this.laserCANID = 0;
+        this.canID = 0;
+        this.kDetectDistance = 0;
+        this.kROI = null;
+        this.kHasForwardLimit = false;
+        this.kHasReverseLimit = false;
+    }
+
+    /*
+     * Constructor for absolute sensor configuration
+     */
+    public SensorConfig(int canID, double forwardLimit, double reverseLimit, double positionTolerance) {
+        this.kType = Type.ABSOLUTE;
+        this.canID = canID;
+        this.kForwardLimit = forwardLimit;
+        this.kReverseLimit = reverseLimit;
+        this.kTolerance = positionTolerance;
+
         this.kDetectDistance = 0;
         this.kROI = null;
         this.kHasForwardLimit = false;
@@ -65,7 +81,7 @@ public class SensorConfig {
         this.kHasReverseLimit = hasReverseLimit;
         this.kTolerance = positionTolerance;
 
-        this.laserCANID = 0;
+        this.canID = 0;
         this.kDetectDistance = 0;
         this.kROI = null;
         this.kForwardLimit = 0;

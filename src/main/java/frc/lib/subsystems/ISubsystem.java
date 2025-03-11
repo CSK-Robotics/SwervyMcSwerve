@@ -1,8 +1,8 @@
-package frc.lib;
+package frc.lib.subsystems;
 
 import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.Subsystem.FieldPosition;
+import frc.lib.subsystems.Subsystem.FieldPosition;
 
 public interface ISubsystem {
     

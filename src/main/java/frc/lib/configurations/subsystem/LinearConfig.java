@@ -1,19 +1,34 @@
 package frc.lib.configurations.subsystem;
 
 import frc.lib.configurations.motor.MotorConfig;
-import frc.lib.configurations.motor.SensorConfig;
+import frc.lib.configurations.sensors.SensorConfig;
 
 public class LinearConfig extends SubsystemConfig {
-    public final double kDrumRadius;
-    public final double kCarriageGroundOffset;
+    public enum LinearType {
+        FLYWHEEL, ELEVETOR, DRIVE, SIMPLE
+    }
+
+    public final LinearType kLinearType;
+
+    public final double kRadius;
+    public final double kPositionOffset;
     public final double kBaseHeight;
 
-    public LinearConfig(MotorConfig kMotorConfig, SensorConfig kSensorConfig, double kDrumRadius,
+    public LinearConfig(LinearType type, MotorConfig kMotorConfig, SensorConfig kSensorConfig, double kDrumRadius,
             double kCarriageGroundOffset, double kBaseHeight) {
-        super(Type.ELEVETOR, kMotorConfig, kSensorConfig);
-        this.kDrumRadius = kDrumRadius;
-        this.kCarriageGroundOffset = kCarriageGroundOffset;
+        super(kMotorConfig, kSensorConfig);
+        this.kLinearType = type;
+        this.kRadius = kDrumRadius;
+        this.kPositionOffset = kCarriageGroundOffset;
         this.kBaseHeight = kBaseHeight;
+    }
+
+    public LinearConfig(LinearType type, MotorConfig kMotorConfig, SensorConfig kSensorConfig, double kWheelRadius) {
+        super(kMotorConfig, kSensorConfig);
+        this.kLinearType = type;
+        this.kRadius = kWheelRadius;
+        this.kPositionOffset = 0.0;
+        this.kBaseHeight = 0.0;
     }
 
 }

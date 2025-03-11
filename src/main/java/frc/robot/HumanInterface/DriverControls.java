@@ -8,9 +8,10 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.Swerve;
-import frc.lib.Subsystem.FieldPosition;
+import frc.lib.configurations.subsystem.ModuleConfig;
+import frc.lib.subsystems.Subsystem.FieldPosition;
 import frc.robot.Commands.Orchestrator;
+import frc.robot.Constants.Swerve;
 
 public class DriverControls {
     private final XboxController m_controller = new XboxController(0);
@@ -41,20 +42,20 @@ public class DriverControls {
         // Get the x speed. We are inverting this because Xbox controllers return
         // negative values when we push forward.
         final var xSpeed = -m_xspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftY(), 0.02))
-                * Swerve.instanceConstants.driveFreeSpeed();
+                * ModuleConfig.SwerveWheelConfig.kMaxSpeed;
 
         // Get the y speed or sideways/strafe speed. We are inverting this because
         // we want a positive value when we pull to the left. Xbox controllers
         // return positive values when you pull to the right by default.
         final var ySpeed = -m_yspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftX(), 0.02))
-                * Swerve.instanceConstants.driveFreeSpeed();
+                * ModuleConfig.SwerveWheelConfig.kMaxSpeed;
 
         // Get the rate of angular rotation. We are inverting this because we want a
         // positive value when we pull to the left (remember, CCW is positive in
         // mathematics). Xbox controllers return positive values when you pull to
         // the right by default.
         final var rot = -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02))
-                * Swerve.instanceConstants.driveFreeSpeed();// TODO: #7 calculate maximum angular velocity of robot.
+                * Swerve.kMaxAngularSpeed;
 
         m_orchestrator.Drive(xSpeed, ySpeed, rot, m_fieldRelative).schedule();
     }

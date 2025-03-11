@@ -9,77 +9,80 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.PowerDistribution;
 
 import static edu.wpi.first.units.Units.Millimeters;
 
 import java.util.Map;
 
-import frc.lib.Subsystem.FieldPosition;
 import frc.lib.configurations.motor.CurrentLimits;
 import frc.lib.configurations.motor.FeedForwardGains;
 import frc.lib.configurations.motor.MotionConstraints;
 import frc.lib.configurations.motor.MotorConfig;
-import frc.lib.configurations.motor.SensorConfig;
 import frc.lib.configurations.motor.SimulationDetails;
 import frc.lib.configurations.motor.MotorConfig.ControllerType;
 import frc.lib.configurations.motor.MotorConfig.MotorType;
+import frc.lib.configurations.sensors.SensorConfig;
 import frc.lib.configurations.subsystem.AngularConfig;
-import frc.lib.configurations.subsystem.FlywheelConfig;
+import frc.lib.subsystems.Subsystem.FieldPosition;
 import frc.lib.configurations.subsystem.LinearConfig;
-import frc.lib.swerve.ModuleConstants;
-import frc.lib.swerve.SwerveInstances;
+import frc.lib.configurations.subsystem.ModuleConfig;
 import frc.robot.Subsystems.ClimberSubsystem;
 import frc.robot.Subsystems.ElevatorSubsystem;
 
 public final class Constants {
+	public static final double ROBOT_WEIGHT = Units.lbsToKilograms(120.0);
+	public static final PowerDistribution PDH = new PowerDistribution();
 	public static final double stickDeadband = 0.05;
 
 	public static final class Swerve {
+		/** Drivetrain Constraints */
+		// private static final double[] kStandardDevs = { 0.0, 0.1 };
+
+		// public static final FeedForwardGains kFeedForwardGains;
+
+		// Drivebase Dimensions
+		public static final double trackWidth = Units.inchesToMeters(23.75);
+		public static final double wheelBase = Units.inchesToMeters(23.75);
+		public static final SwerveDriveKinematics kKinematics = new SwerveDriveKinematics(
+				new Translation2d(Swerve.wheelBase / 2.0,
+						Swerve.trackWidth / 2.0),
+				new Translation2d(Swerve.wheelBase / 2.0,
+						-Swerve.trackWidth / 2.0),
+				new Translation2d(-Swerve.wheelBase / 2.0,
+						Swerve.trackWidth / 2.0),
+				new Translation2d(-Swerve.wheelBase / 2.0,
+						-Swerve.trackWidth / 2.0));
+		public static final double kBumperThickness = Units.inchesToMeters(3.0);
+
+		// Max Rotational Speed
+		public static final double kMaxAngularSpeed = ModuleConfig.SwerveWheelConfig.kMaxSpeed
+				/ Math.hypot(trackWidth, wheelBase); // radians per second
+
+		// Starting Pose
 		public static final Pose2d startingPose = new Pose2d(Units.inchesToMeters(0), Units.inchesToMeters(0),
 				new Rotation2d(0));
+
 		// Gyro
 		public static final boolean invertGyro = false; // Always ensure Gyro is CCW+ CW-
 
-		// Swerve Module Type
-		public static final SwerveInstances instanceConstants = SwerveInstances
-				.SDSMK4i(SwerveInstances.driveGearRatios.SDSMK4i_L2);
-
-		/* Drivebase Dimensions */
-		public static final double trackWidth = Units.inchesToMeters(23.75);
-		public static final double wheelBase = Units.inchesToMeters(23.75);
-
-		/* Swerve Current Limiting */
-		public static final CurrentLimits angleLimits = new CurrentLimits(20, 40, 0.1, true);
-		public static final CurrentLimits driveLimits = new CurrentLimits(35, 60, 0.1, true);
-
-		/* Motor PID Values */
-		public static final ClosedLoopConfig anglePID = new ClosedLoopConfig().pidf(0.05, 0.0, 0.0, 0.0,
-				ClosedLoopSlot.kSlot0);
-		public static final ClosedLoopConfig drivePID = new ClosedLoopConfig().pidf(0.04, 0.0, 0.0,
-				1 / 565 /* Kv=565 for NEO Vortex (look up on website) */, ClosedLoopSlot.kSlot0);
-
-		/** Drivetrain Constraints */
-		public static final double timeToMaxLinearVelocity = 3.6576; // seconds
-		public static final double timeToMaxAngularVelocity = 5.0; // seconds
-
-		/* Module Specific Constants */
-		public static class Modules {
-			/* Front Left Module - Module 0 */
-			public static final ModuleConstants mod0Constants = new ModuleConstants(2, 3, 10,
-					Rotation2d.fromDegrees(0));
-			/* Front Right Module - Module 1 */
-			public static final ModuleConstants mod1Constants = new ModuleConstants(4, 5, 11,
-					Rotation2d.fromDegrees(0));
-			/* Back Left Module - Module 2 */
-			public static final ModuleConstants mod2Constants = new ModuleConstants(6, 7, 12,
-					Rotation2d.fromDegrees(0));
-			/* Back Right Module - Module 3 */
-			public static final ModuleConstants mod3Constants = new ModuleConstants(8, 9, 13,
-					Rotation2d.fromDegrees(0));
-		}
+		/* Front Left Module - Module 0 */
+		public static final ModuleConfig frontLeftConstants = new ModuleConfig("frontLeftSwerveModule", 8, 7,
+				9, false);
+		/* Front Right Module - Module 1 */
+		public static final ModuleConfig frontRightConstants = new ModuleConfig("frontRightSwerveModule", 2,
+				1, 10, true);
+		/* Back Left Module - Module 2 */
+		public static final ModuleConfig backLeftConstants = new ModuleConfig("backLeftSwerveModule", 4, 3,
+				11, false);
+		/* Back Right Module - Module 3 */
+		public static final ModuleConfig backRightConstants = new ModuleConfig("backRightSwerveModule", 5, 6,
+				12, true);
 	}
 
 	// TODO: #12 Find the actual values for the camera
@@ -171,7 +174,7 @@ public final class Constants {
 		private static final double kTravelDistance = Units.inchesToMeters(26);
 		private static final MotionConstraints kElevatorConstraints = new MotionConstraints(kZeroingSpeed,
 				new TrapezoidProfile.Constraints(Units.inchesToMeters(20.0), Units.inchesToMeters(40.0)),
-				ElevatorSubsystem.POSITIONS.get(FieldPosition.STARTING), kTravelDistance);
+				ElevatorSubsystem.POSITIONS.get(FieldPosition.STARTING).m_value.get(), kTravelDistance);
 		private static final CurrentLimits kElevatorCurrentLimits = new CurrentLimits(25, 40, 0.1, true);
 
 		// Sensor Constants
@@ -179,7 +182,7 @@ public final class Constants {
 		private static final SensorConfig kElevatorSensorConfig = new SensorConfig(false, true, kPositionTolerance);
 
 		private ElevatorConstants() {
-			super(new MotorConfig(MotorType.NEO, ControllerType.SPARK_MAX,
+			super(LinearType.ELEVETOR, new MotorConfig(MotorType.NEO, ControllerType.SPARK_MAX,
 					Map.of(kElevatorMotorID, false, kSecondaryElevatorMotorID, true), kElevatorCurrentLimits,
 					kElevatorFeedForwardGains, kElevatorConstraints, kElevatorGains, kElevatorSimulationDetails),
 					kElevatorSensorConfig, kElevatorDrumRadius, kElevatorCarriageGroundOffset, kElevatorHeight);
@@ -192,7 +195,7 @@ public final class Constants {
 	public static final class CoralConstants {
 		private static final double[] kStandardDevs = { 0.0, 0.1 };
 
-		public static final class ArmConfig extends AngularConfig {
+		public static final class CoralAngularConfig extends AngularConfig {
 			// Arm IDs
 			private static final int kArmMotorID = 16;
 
@@ -215,7 +218,7 @@ public final class Constants {
 			private static final double kMaxAngle = Units.degreesToRadians(180.0);
 			private static final MotionConstraints kArmConstraints = new MotionConstraints(kZeroingSpeed,
 					new TrapezoidProfile.Constraints(Units.degreesToRadians(90.0), Units.degreesToRadians(180.0)),
-					ClimberSubsystem.POSITIONS.get(FieldPosition.STARTING), kMaxAngle);
+					ClimberSubsystem.POSITIONS.get(FieldPosition.STARTING).m_value.get(), kMaxAngle);
 			private static final CurrentLimits kArmCurrentLimits = new CurrentLimits(0, 40, 0.1, true);
 
 			// Sensor Constants
@@ -223,14 +226,16 @@ public final class Constants {
 			private static final SensorConfig kArmSensorConfig = new SensorConfig(kMaxAngle, 0, kPositionTolerance);
 
 			// ArmConfig
-			private ArmConfig() {
-				super(new MotorConfig(MotorType.NEOVORTEX, ControllerType.SPARK_FLEX, Map.of(kArmMotorID, false),
-						kArmCurrentLimits, kArmFeedForwardGains, kArmConstraints, kArmGains, kArmSimulationDetails),
+			private CoralAngularConfig() {
+				super(AngularType.VERTICAL,
+						new MotorConfig(MotorType.NEOVORTEX, ControllerType.SPARK_FLEX, Map.of(kArmMotorID, false),
+								kArmCurrentLimits, kArmFeedForwardGains, kArmConstraints, kArmGains,
+								kArmSimulationDetails),
 						kArmSensorConfig, kCoralArmLength);
 			}
 		}
 
-		public static final class WheelConfig extends FlywheelConfig {
+		public static final class CoralWheelConfig extends LinearConfig {
 			// Wheel IDs
 			private static final int kWheelMotorID = 17;
 			private static final int kLaserCANID = 18;
@@ -254,22 +259,23 @@ public final class Constants {
 					kCoralWheelWeight, kStandardDevs);
 
 			// WheelConfig
-			public WheelConfig() {
-				super(new MotorConfig(MotorType.NEOVORTEX, ControllerType.SPARK_FLEX, Map.of(kWheelMotorID, false),
-						kWheelLimits, null, null, null, kWheelSimulationDetails), kWheelSensorConfig,
-						kCoralWheelDiameter);
+			public CoralWheelConfig() {
+				super(LinearType.SIMPLE,
+						new MotorConfig(MotorType.NEOVORTEX, ControllerType.SPARK_FLEX, Map.of(kWheelMotorID, false),
+								kWheelLimits, null, null, null, kWheelSimulationDetails),
+						kWheelSensorConfig, kCoralWheelDiameter);
 			}
 		}
 
-		public static final ArmConfig kArmConfig = new ArmConfig();
-		public static final WheelConfig kWheelConfig = new WheelConfig();
+		public static final AngularConfig kAngularConfig = new CoralAngularConfig();
+		public static final LinearConfig kWheelConfig = new CoralWheelConfig();
 	}
 
 	// TODO: #16 Find the actual values for Coral
 	public static final class AlgaeConstants {
 		private static final double[] kStandardDevs = { 0.0, 0.1 };
 
-		public static final class ArmConfig extends AngularConfig {
+		public static final class AlgaeAngularConfig extends AngularConfig {
 			// Arm IDs
 			private static final int kArmMotorID = 19;
 
@@ -293,7 +299,7 @@ public final class Constants {
 			private static final double kMaxAngle = Units.degreesToRadians(180.0);
 			private static final MotionConstraints kArmConstraints = new MotionConstraints(kZeroingSpeed,
 					new TrapezoidProfile.Constraints(Units.degreesToRadians(90.0), Units.degreesToRadians(180.0)),
-					ClimberSubsystem.POSITIONS.get(FieldPosition.STARTING), kMaxAngle);
+					ClimberSubsystem.POSITIONS.get(FieldPosition.STARTING).m_value.get(), kMaxAngle);
 			private static final CurrentLimits kArmCurrentLimits = new CurrentLimits(35, 40, 0.1, true);
 
 			// Sensor Constants
@@ -301,14 +307,16 @@ public final class Constants {
 			private static final SensorConfig kArmSensorConfig = new SensorConfig(kMaxAngle, 0, kPositionTolerance);
 
 			// ArmConfig
-			private ArmConfig() {
-				super(new MotorConfig(MotorType.NEOVORTEX, ControllerType.SPARK_FLEX, Map.of(kArmMotorID, false),
-						kArmCurrentLimits, kArmFeedForwardGains, kArmConstraints, kArmGains, kArmSimulationDetails),
+			private AlgaeAngularConfig() {
+				super(AngularType.VERTICAL,
+						new MotorConfig(MotorType.NEOVORTEX, ControllerType.SPARK_FLEX, Map.of(kArmMotorID, false),
+								kArmCurrentLimits, kArmFeedForwardGains, kArmConstraints, kArmGains,
+								kArmSimulationDetails),
 						kArmSensorConfig, kAlgaeArmLength);
 			}
 		}
 
-		public static final class WheelConfig extends FlywheelConfig {
+		public static final class AlgaeWheelConfig extends LinearConfig {
 			// Wheel IDs
 			private static final int kWheelMotorID = 20;
 			private static final int kLaserCANID = 21;
@@ -332,15 +340,17 @@ public final class Constants {
 					kAlgaeWheelWeight, kStandardDevs);
 
 			// WheelConfig
-			public WheelConfig() {
-				super(new MotorConfig(MotorType.NEOVORTEX, ControllerType.SPARK_FLEX, Map.of(kWheelMotorID, false),
-						kWheelLimits, null, null, null, kWheelSimulationDetails), kWheelSensorConfig,
+			public AlgaeWheelConfig() {
+				super(LinearType.SIMPLE,
+						new MotorConfig(MotorType.NEOVORTEX, ControllerType.SPARK_FLEX, Map.of(kWheelMotorID, false),
+								kWheelLimits, null, null, null, kWheelSimulationDetails),
+						kWheelSensorConfig,
 						kAlgaeWheelDiameter);
 			}
 		}
 
-		public static final ArmConfig kArmConfig = new ArmConfig();
-		public static final WheelConfig kWheelConfig = new WheelConfig();
+		public static final AngularConfig kArmConfig = new AlgaeAngularConfig();
+		public static final LinearConfig kWheelConfig = new AlgaeWheelConfig();
 	}
 
 	// TODO: #17 Find the actual values for Climber
@@ -369,7 +379,7 @@ public final class Constants {
 		private static final double kMaxAngle = Units.degreesToRadians(270.0);
 		private static final MotionConstraints kArmConstraints = new MotionConstraints(kZeroingSpeed,
 				new TrapezoidProfile.Constraints(Units.degreesToRadians(90.0), Units.degreesToRadians(180.0)),
-				ClimberSubsystem.POSITIONS.get(FieldPosition.STARTING), kMaxAngle);
+				ClimberSubsystem.POSITIONS.get(FieldPosition.STARTING).m_value.get(), kMaxAngle);
 		private static final CurrentLimits kArmCurrentLimits = new CurrentLimits(30, 40, 0.1, true);
 
 		// Sensor Constants
@@ -378,11 +388,12 @@ public final class Constants {
 
 		// ClimberConfig
 		private ClimberConstants() {
-			super(new MotorConfig(MotorType.NEO, ControllerType.SPARK_MAX,
+			super(AngularType.VERTICAL, new MotorConfig(MotorType.NEO, ControllerType.SPARK_MAX,
 					Map.of(kArmMotorID, false, kSecondaryArmMotorID, true), kArmCurrentLimits,
 					kArmFeedForwardGains, kArmConstraints, kArmGains, kArmSimulationDetails),
 					kArmSensorConfig, kClimberArmLength);
 		}
+
 		public static final ClimberConstants kClimberConfig = new ClimberConstants();
 	}
 }
