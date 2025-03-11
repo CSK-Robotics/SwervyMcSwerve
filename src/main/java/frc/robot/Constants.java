@@ -58,16 +58,16 @@ public final class Constants {
         /* Module Specific Constants */
         public static class Modules {
             /* Front Left Module - Module 0 */
-            public static final ModuleConstants mod0Constants = new ModuleConstants(2, 3, 10,
+            public static final ModuleConstants mod0Constants = new ModuleConstants(8, 7, 9,
                     Rotation2d.fromDegrees(0));
             /* Front Right Module - Module 1 */
-            public static final ModuleConstants mod1Constants = new ModuleConstants(4, 5, 11,
+            public static final ModuleConstants mod1Constants = new ModuleConstants(2, 1, 10,
                     Rotation2d.fromDegrees(0));
             /* Back Left Module - Module 2 */
-            public static final ModuleConstants mod2Constants = new ModuleConstants(6, 7, 12,
+            public static final ModuleConstants mod2Constants = new ModuleConstants(4, 3, 11,
                     Rotation2d.fromDegrees(0));
             /* Back Right Module - Module 3 */
-            public static final ModuleConstants mod3Constants = new ModuleConstants(8, 9, 13,
+            public static final ModuleConstants mod3Constants = new ModuleConstants(6, 5, 12,
                     Rotation2d.fromDegrees(0));
         }
     }

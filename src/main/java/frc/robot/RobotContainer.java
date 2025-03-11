@@ -11,8 +11,10 @@ import frc.robot.Subsystems.DrivetrainSubsystem;
 import frc.robot.Subsystems.ElevatorSubsystem;
 
 public class RobotContainer {
-  private final Orchestrator orchestrator = new Orchestrator(new DrivetrainSubsystem(), new ElevatorSubsystem(),
-      new CoralSubsystem(), new AlgaeSubsystem(), new ClimberSubsystem());
+  //private final Orchestrator orchestrator = new Orchestrator(new DrivetrainSubsystem(), new ElevatorSubsystem(),
+  //    new CoralSubsystem(), new AlgaeSubsystem(), new ClimberSubsystem());
+
+  private final Orchestrator orchestrator = new Orchestrator(new DrivetrainSubsystem());
   private final DriverControls driver = new DriverControls(orchestrator);
   private final OperatorControls operator = new OperatorControls(orchestrator);
 

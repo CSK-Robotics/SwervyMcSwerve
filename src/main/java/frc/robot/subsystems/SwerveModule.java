@@ -119,8 +119,6 @@ public class SwerveModule {
             m_turningMotor.stopMotor();
         }
         double degReference = this.desiredState.angle.getDegrees();
-        // System.out.println("(" + device_name + ")" + "degReference: " +
-        // degReference);
         SparkClosedLoopController turning_controller = m_turningMotor.getClosedLoopController();
         turning_controller.setReference(degReference, ControlType.kPosition, ClosedLoopSlot.kSlot0);
 
@@ -133,17 +131,11 @@ public class SwerveModule {
             double velocity = this.desiredState.speedMetersPerSecond;
             driving_controller.setReference(velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
         }
-
-        // System.out.println( "(" + device_name + ")" + "degRef: " + degReference + "
-        // desired_speed: " + this.desiredState.speedMetersPerSecond + " current
-        // cancoder angle: " + currentAngle);
     }
 
     public void synchronizeEncoders(double offset) {
         double current_canCoder_state = getCANcoderAngle().getDegrees();
         double absolutePosition = current_canCoder_state - offset;
-        System.out.println("(" + moduleName + ")" + " absolute positions: " + absolutePosition + " cancoder position: "
-                + current_canCoder_state);
         rel_angleEncoder.setPosition(-absolutePosition);
     }
 }

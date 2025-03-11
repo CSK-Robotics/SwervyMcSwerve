@@ -39,7 +39,7 @@ public class StationData {
                         new Color8Bit(Color.kYellow)));
         kAlgaeMech = kElevatorCarriage.append(
                 new MechanismLigament2d(
-                        "Coral",
+                        "Coral2",
                         AlgaeConstants.instance.kArmConfig.kArmLength, // ArmConstants.kArmLength,
                         AlgaeSubsystem.POSITIONS.get(FieldPosition.STARTING), // ArmConstants.kArmStartingAngle.in(Degrees),
                         6,

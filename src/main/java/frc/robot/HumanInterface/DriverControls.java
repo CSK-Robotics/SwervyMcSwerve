@@ -28,11 +28,13 @@ public class DriverControls {
 
     public DriverControls(Orchestrator orchestrator) {
         m_orchestrator = orchestrator;
+        /*
         m_triggers.put("LB: Climb",
                 new Trigger(m_controller.leftBumper(m_loop).debounce(0.2)).onTrue(orchestrator.Climb()));
         m_triggers.put("RB: Release Algae",
                 new Trigger(m_controller.rightBumper(m_loop).debounce(0.2)).whileTrue(
                         orchestrator.ScoreAlgae(FieldPosition.PROCESSOR, false, m_controller.rightBumper(m_loop))));
+        */
         m_controller.start(m_loop).debounce(0.2).ifHigh(() -> m_fieldRelative = !m_fieldRelative);
         m_loop.bind(this::driveWithJoystick);
     }

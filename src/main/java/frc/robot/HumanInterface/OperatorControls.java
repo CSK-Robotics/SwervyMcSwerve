@@ -16,6 +16,7 @@ public class OperatorControls {
     public final Map<String, Trigger> m_triggers = new HashMap<String, Trigger>();
 
     public OperatorControls(Orchestrator orchestrator) {
+        /*
         m_triggers.put("A: L1 Coral", new Trigger(m_controller.a(m_loop).debounce(0.2))
                 .onTrue(orchestrator.ScoreCoral(FieldPosition.L1, false, m_controller.rightBumper(m_loop))));
         m_triggers.put("B: L2 Coral", new Trigger(m_controller.b(m_loop).debounce(0.2))
@@ -36,5 +37,6 @@ public class OperatorControls {
                 .onTrue(orchestrator.IntakeAlgae(FieldPosition.L2, false)));
         m_triggers.put("RIGHT: Intake L2 Algae", new Trigger(m_controller.povRight(m_loop).debounce(0.2))
                 .onTrue(orchestrator.IntakeAlgae(FieldPosition.L2, false)));
+        */
     }
 }

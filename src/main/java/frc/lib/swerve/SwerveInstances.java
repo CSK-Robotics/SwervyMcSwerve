@@ -18,10 +18,8 @@ public class SwerveInstances {
     public final boolean angleMotorInvert;
     public final boolean canCoderInvert;
 
-    private final DCMotor driveMotorConstants = DCMotor.getNeoVortex(1)
-            .withReduction(Constants.Swerve.instanceConstants.driveGearRatio);
-    private final DCMotor angleMotorConstants = DCMotor.getNeoVortex(1)
-            .withReduction(Constants.Swerve.instanceConstants.angleGearRatio);
+    private final DCMotor driveMotorConstants;
+    private final DCMotor angleMotorConstants;
 
     public SwerveInstances(double wheelDiameter, double angleGearRatio, double driveGearRatio, double angleKP,
             double angleKI, double angleKD, double angleKF, boolean driveMotorInvert, boolean angleMotorInvert,
@@ -37,6 +35,11 @@ public class SwerveInstances {
         this.driveMotorInvert = driveMotorInvert;
         this.angleMotorInvert = angleMotorInvert;
         this.canCoderInvert = canCoderInvert;
+
+        this.driveMotorConstants = DCMotor.getNeoVortex(1)
+            .withReduction(this.driveGearRatio);
+        this.angleMotorConstants = DCMotor.getNeoVortex(1)
+            .withReduction(this.angleGearRatio);
     }
 
     /** Swerve Drive Specialties - MK3 Module */
