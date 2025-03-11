@@ -40,7 +40,7 @@ public class Drivetrain extends SubsystemBase {
   private final SwerveModule m_frontLeft = new SwerveModule(8, 7, 9, Constants.Swerve.Modules.Mod0.constants, "m_frontLeft", false);
   private final SwerveModule m_frontRight = new SwerveModule(2, 1, 10, Constants.Swerve.Modules.Mod1.constants, "m_frontRight", true);
   private final SwerveModule m_backLeft = new SwerveModule(4, 3, 11, Constants.Swerve.Modules.Mod2.constants, "m_backLeft", false);
-  private final SwerveModule m_backRight = new SwerveModule(5, 6, 12, Constants.Swerve.Modules.Mod3.constants, "m_backRight", true);
+  private final SwerveModule m_backRight = new SwerveModule(6, 5, 12, Constants.Swerve.Modules.Mod3.constants, "m_backRight", true);
 
   private final AnalogGyro m_gyro = new AnalogGyro(0);
 
