@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 public class Robot extends TimedRobot {
   private final XboxController m_controller = new XboxController(0);
   private final Drivetrain m_swerve = new Drivetrain();
+  private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
 
   // Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0 to 1.
   private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
@@ -76,6 +77,8 @@ public class Robot extends TimedRobot {
         -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02))
             * Drivetrain.kMaxAngularSpeed;
     m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative, getPeriod());
+
+    m_elevator.reachGoal(m_controller.getRightTriggerAxis());
   }
 
   public Command getAutonomousCommand() {
