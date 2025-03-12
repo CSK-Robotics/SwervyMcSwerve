@@ -114,8 +114,9 @@ public class DrivetrainSubsystem extends SubsystemBase implements ISubsystem {
      * @param fieldRelative Whether the provided x and y speeds are relative to
      *                      the field.
      */
-    public void drive(
+    public Command drive(
             double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
+        System.out.println("x: " + xSpeed + ", y: " + ySpeed + ", theta: " + rot);
         ChassisSpeeds desiredChassisSpeeds = fieldRelative
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, m_gyro.getRotation2d())
                 : new ChassisSpeeds(xSpeed, ySpeed, rot);
@@ -128,11 +129,11 @@ public class DrivetrainSubsystem extends SubsystemBase implements ISubsystem {
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates,
                 ModuleConfig.SwerveWheelConfig.kMaxSpeed);
 
-        m_frontLeft.setDesiredState(swerveModuleStates[0], "frontLeft");
-        m_frontRight.setDesiredState(swerveModuleStates[1], "frontRight");
-        m_backLeft.setDesiredState(swerveModuleStates[2], "backLeft");
-        m_backRight.setDesiredState(swerveModuleStates[3], "backRight");
-
+        return m_frontLeft.setDesiredState(swerveModuleStates[0], "frontLeft").alongWith(
+                m_frontRight.setDesiredState(swerveModuleStates[1], "frontRight")).alongWith(
+                        m_backLeft.setDesiredState(swerveModuleStates[2], "backLeft"))
+                .alongWith(
+                        m_backRight.setDesiredState(swerveModuleStates[3], "backRight"));
     }
 
     public Pose2d getPose() {
@@ -168,8 +169,9 @@ public class DrivetrainSubsystem extends SubsystemBase implements ISubsystem {
      * Updates the field relative position of the robot.
      */
     private void updateOdometry() {
-        LimelightHelpers.PoseEstimate limelightPose = getLimelightPose();
-        m_odometry.addVisionMeasurement(limelightPose.pose, limelightPose.timestampSeconds);
+        // LimelightHelpers.PoseEstimate limelightPose = getLimelightPose();
+        // m_odometry.addVisionMeasurement(limelightPose.pose,
+        // limelightPose.timestampSeconds);
         m_odometry.update(
                 m_gyro.getRotation2d(),
                 new SwerveModulePosition[] {
@@ -183,7 +185,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements ISubsystem {
     @Override
     public void periodic() {
         updateOdometry();
-        m_field.setRobotPose(getPose());
+        // m_field.setRobotPose(getPose());
     }
 
     @Override

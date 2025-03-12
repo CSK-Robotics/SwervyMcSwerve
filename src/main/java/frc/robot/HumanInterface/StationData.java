@@ -39,25 +39,22 @@ public class StationData {
 				new MechanismLigament2d(
 						"Coral",
 						CoralConstants.kAngularConfig.kRadius, // ArmConstants.kArmLength,
-						CoralSubsystem.ARM_POSITIONS.get(FieldPosition.STARTING).m_value.get()
-								.doubleValue(), // ArmConstants.kArmStartingAngle.in(Degrees),
+						0.0, // ArmConstants.kArmStartingAngle.in(Degrees),
 						6, new Color8Bit(Color.kYellow)));
 		kAlgaeMech = kElevatorCarriage.append(
 				new MechanismLigament2d(
 						"Algae",
 						AlgaeConstants.kArmConfig.kRadius, // ArmConstants.kArmLength,
-						AlgaeSubsystem.ARM_POSITIONS.get(FieldPosition.STARTING).m_value.get()
-								.doubleValue(), // ArmConstants.kArmStartingAngle.in(Degrees),
+						0.0, // ArmConstants.kArmStartingAngle.in(Degrees),
 						6, new Color8Bit(Color.kGreen)));
 
 		// Climber
 		kClimberBase = sideRobotView.getRoot("Climber Base", 0.0, 0.0); // Climber position on chassis
 		kClimberMech = kClimberBase.append(
 				new MechanismLigament2d(
-						"Algae",
+						"Climber",
 						ClimberConstants.kClimberConfig.kRadius, // ArmConstants.kArmLength,
-						ClimberSubsystem.POSITIONS.get(FieldPosition.STARTING).m_value.get()
-								.doubleValue(), // ArmConstants.kArmStartingAngle.in(Degrees),
+						0.0, // ArmConstants.kArmStartingAngle.in(Degrees),
 						6, new Color8Bit(Color.kGreen)));
 	}
 

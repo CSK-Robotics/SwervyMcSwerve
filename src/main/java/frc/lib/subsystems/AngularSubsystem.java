@@ -67,15 +67,18 @@ public class AngularSubsystem extends Subsystem {
                 .velocityConversionFactor(conversionFactor * 60));
         m_motor.configure(m_sparkConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
-        m_armFeedForward = new ArmFeedforward(
-                config.kFeedForwardGains.kS,
-                config.kFeedForwardGains.kG,
-                config.kFeedForwardGains.kV,
-                config.kFeedForwardGains.kA);
+        if (config.kFeedForwardGains != null) {
+            m_armFeedForward = new ArmFeedforward(
+                    config.kFeedForwardGains.kS,
+                    config.kFeedForwardGains.kG,
+                    config.kFeedForwardGains.kV,
+                    config.kFeedForwardGains.kA);
 
-        m_simpleFeedForward = new SimpleMotorFeedforward(config.kFeedForwardGains.kS,
-                config.kFeedForwardGains.kV, config.kFeedForwardGains.kA, Robot.kDefaultPeriod);
-
+            m_simpleFeedForward = new SimpleMotorFeedforward(config.kFeedForwardGains.kS,
+                    config.kFeedForwardGains.kV, config.kFeedForwardGains.kA, Robot.kDefaultPeriod);
+        } else {
+            m_simpleFeedForward = new SimpleMotorFeedforward(0.0, 0.0, 0.0, Robot.kDefaultPeriod);
+        }
         if (RobotBase.isSimulation()) {
             SimulationDetails sim = config.kSimulation;
             m_armSim = new SingleJointedArmSim(m_gearbox, sim.kExternalRatio,

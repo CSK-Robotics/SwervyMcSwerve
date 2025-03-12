@@ -7,6 +7,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.event.EventLoop;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.configurations.subsystem.ModuleConfig;
 import frc.lib.subsystems.Subsystem.FieldPosition;
@@ -14,49 +15,54 @@ import frc.robot.Commands.Orchestrator;
 import frc.robot.Constants.Swerve;
 
 public class DriverControls {
-    private final XboxController m_controller = new XboxController(0);
+        private final XboxController m_controller = new XboxController(0);
 
-    // Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0 to 1.
-    private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
-    private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(3);
-    private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(3);
+        // Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0 to 1.
+        private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
+        private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(3);
+        private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(3);
 
-    private boolean m_fieldRelative;
+        private boolean m_fieldRelative;
 
-    private final Orchestrator m_orchestrator;
-    public final EventLoop m_loop = new EventLoop();
-    public final Map<String, Trigger> m_triggers = new HashMap<String, Trigger>();
+        private final Orchestrator m_orchestrator;
+        public final EventLoop m_loop = new EventLoop();
+        public final Map<String, Trigger> m_triggers = new HashMap<String, Trigger>();
 
-    public DriverControls(Orchestrator orchestrator) {
-        m_orchestrator = orchestrator;
-        m_triggers.put("LB: Climb",
-                new Trigger(m_controller.leftBumper(m_loop).debounce(0.2)).toggleOnTrue(orchestrator.Climb()));
-        m_triggers.put("RB: Release Algae",
-                new Trigger(m_controller.rightBumper(m_loop).debounce(0.2)).whileTrue(
-                        orchestrator.ScoreAlgae(FieldPosition.PROCESSOR, false, m_controller.rightBumper(m_loop))));
-        m_controller.start(m_loop).debounce(0.2).ifHigh(() -> m_fieldRelative = !m_fieldRelative);
-        m_loop.bind(this::driveWithJoystick);
-    }
+        public DriverControls(Orchestrator orchestrator) {
+                m_orchestrator = orchestrator;
+                /*
+                 * m_triggers.put("LB: Climb",
+                 * new Trigger(m_controller.leftBumper(m_loop).debounce(0.2)).toggleOnTrue(
+                 * orchestrator.Climb()));
+                 * m_triggers.put("RB: Release Algae",
+                 * new Trigger(m_controller.rightBumper(m_loop).debounce(0.2)).whileTrue(
+                 * orchestrator.ScoreAlgae(FieldPosition.PROCESSOR, false,
+                 * m_controller.rightBumper(m_loop))));
+                 */
+                m_controller.start(m_loop).debounce(0.2).ifHigh(() -> m_fieldRelative = !m_fieldRelative);
+                m_loop.bind(this::driveWithJoystick);
+        }
 
-    public void driveWithJoystick() {
-        // Get the x speed. We are inverting this because Xbox controllers return
-        // negative values when we push forward.
-        final var xSpeed = -m_xspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftY(), 0.02))
-                * ModuleConfig.SwerveWheelConfig.kMaxSpeed;
+        public void driveWithJoystick() {
+                // Get the x speed. We are inverting this because Xbox controllers return
+                // negative values when we push forward.
+                final var xSpeed = -m_xspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftY(), 0.02))
+                                * ModuleConfig.SwerveWheelConfig.kMaxSpeed;
 
-        // Get the y speed or sideways/strafe speed. We are inverting this because
-        // we want a positive value when we pull to the left. Xbox controllers
-        // return positive values when you pull to the right by default.
-        final var ySpeed = -m_yspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftX(), 0.02))
-                * ModuleConfig.SwerveWheelConfig.kMaxSpeed;
+                // Get the y speed or sideways/strafe speed. We are inverting this because
+                // we want a positive value when we pull to the left. Xbox controllers
+                // return positive values when you pull to the right by default.
+                final var ySpeed = -m_yspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftX(), 0.02))
+                                * ModuleConfig.SwerveWheelConfig.kMaxSpeed;
 
-        // Get the rate of angular rotation. We are inverting this because we want a
-        // positive value when we pull to the left (remember, CCW is positive in
-        // mathematics). Xbox controllers return positive values when you pull to
-        // the right by default.
-        final var rot = -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02))
-                * Swerve.kMaxAngularSpeed;
+                // Get the rate of angular rotation. We are inverting this because we want a
+                // positive value when we pull to the left (remember, CCW is positive in
+                // mathematics). Xbox controllers return positive values when you pull to
+                // the right by default.
+                final var rot = -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02))
+                                * Swerve.kMaxAngularSpeed;
 
-        m_orchestrator.Drive(xSpeed, ySpeed, rot, m_fieldRelative).schedule();
-    }
+                //System.out.println("x: " +xSpeed+ ", y: " +ySpeed+ ", theta: " + rot);
+                m_orchestrator.Drive(xSpeed, ySpeed, rot, m_fieldRelative).schedule();
+        }
 }

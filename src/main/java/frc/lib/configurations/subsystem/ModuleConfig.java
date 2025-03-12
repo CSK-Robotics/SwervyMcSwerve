@@ -10,6 +10,7 @@ import java.util.Map;
 import frc.lib.configurations.motor.CurrentLimits;
 import frc.lib.configurations.motor.MotionConstraints;
 import frc.lib.configurations.motor.MotorConfig;
+import frc.lib.configurations.motor.SimulationDetails;
 import frc.lib.configurations.motor.MotorConfig.ControllerType;
 import frc.lib.configurations.motor.MotorConfig.MotorType;
 import frc.lib.configurations.sensors.SensorConfig;
@@ -34,7 +35,7 @@ public class ModuleConfig {
 		private static final MotionConstraints kConstraints = new MotionConstraints(0.0,
 				new TrapezoidProfile.Constraints(Units.degreesToRadians(90.0),
 						Units.degreesToRadians(180.0)),
-				SwerveModule.AngleSubsystem.POSITIONS.get(FieldPosition.STARTING).m_value.get(),
+				0.0, // SwerveModule.AngleSubsystem.POSITIONS.get(FieldPosition.STARTING).m_value.get(),
 				kMaxAngle);
 		private static final CurrentLimits kCurrentLimits = new CurrentLimits(20, 40, 0.1, true);
 
@@ -45,7 +46,8 @@ public class ModuleConfig {
 		private SwerveAngularConfig(int motorID, boolean invert, int sensorID) {
 			super(AngularType.HORIZONTAL, new MotorConfig(MotorType.NEOVORTEX, ControllerType.SPARK_FLEX,
 					Map.of(motorID, invert),
-					kCurrentLimits, null, kConstraints, kGains, null),
+					kCurrentLimits, null, kConstraints, kGains,
+					new SimulationDetails(instanceConstants.driveGearRatio, 1, Constants.ROBOT_WEIGHT, null)),
 					new SensorConfig(sensorID, kMaxAngle, -kMaxAngle,
 							kPositionTolerance));
 		}
@@ -62,7 +64,8 @@ public class ModuleConfig {
 		// Constraints
 		public static final double kMaxSpeed = DCMotor.getNeoVortex(1).withReduction(instanceConstants.driveGearRatio)
 				.getSpeed(Constants.ROBOT_WEIGHT * 9.8 * instanceConstants.frictionCoefficient,
-						Constants.PDH.getVoltage()) * kSwerveWheelDiameter / 2; // meters per second
+						12.0)
+				* kSwerveWheelDiameter / 2; // meters per second
 		public static final double timeToMaxVelocity = 3.6576; // seconds
 		private static final CurrentLimits kCurrentLimits = new CurrentLimits(35, 60, 0.1, true);
 		private static final MotionConstraints kConstraints = new MotionConstraints(0.0,
@@ -70,11 +73,16 @@ public class ModuleConfig {
 				-Double.MAX_VALUE,
 				Double.MAX_VALUE);
 
+		// SimulationDetails kSim; = new
+		// SimulationDetails(instanceConstants.driveGearRatio, 1,
+		// Constants.ROBOT_WEIGHT, null);
+
 		// WheelConfig
 		public SwerveWheelConfig(int motorID, boolean invert) {
 			super(LinearType.DRIVE, new MotorConfig(MotorType.NEOVORTEX, ControllerType.SPARK_FLEX,
 					Map.of(motorID, invert),
-					kCurrentLimits, null, kConstraints, kGains, null),
+					kCurrentLimits, null, kConstraints, kGains,
+					new SimulationDetails(instanceConstants.driveGearRatio, 1, Constants.ROBOT_WEIGHT, null)),
 					null, kSwerveWheelDiameter);
 		}
 	}

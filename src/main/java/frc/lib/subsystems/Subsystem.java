@@ -106,8 +106,8 @@ public abstract class Subsystem extends SubsystemBase implements ISubsystem {
     protected DCMotor m_gearbox;
     protected SparkSim m_motorSim;
 
-    //private SimpleMotorFeedforward m_simpleFeedForward;
-    //private DCMotorSim m_sim;
+    // private SimpleMotorFeedforward m_simpleFeedForward;
+    // private DCMotorSim m_sim;
 
     protected final EventLoop m_loop = new EventLoop();
     protected Trigger m_forwardTrigger, m_reverseTrigger;
@@ -122,7 +122,8 @@ public abstract class Subsystem extends SubsystemBase implements ISubsystem {
         this.constants = constants;
 
         configureMotors();
-        configureSensor();
+        if (constants.kSensorConfig != null)
+            configureSensor();
 
         if (DriverStation.isTest()) {
             configureSysId();
@@ -283,17 +284,20 @@ public abstract class Subsystem extends SubsystemBase implements ISubsystem {
                         new SparkFlexConfig().apply(new ClosedLoopConfig().positionWrappingEnabled(true)
                                 .positionWrappingInputRange(constraints.kLowerLimit, constraints.kUpperLimit)),
                         ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-
-                m_forwardTrigger = new Trigger(m_loop,
-                        () -> MathUtil.isNear(config.kForwardLimit, m_absoluteEncoder.getPosition(), config.kTolerance))
-                        .debounce(0.2).onTrue(this.run(this::stop));
-                m_reverseTrigger = new Trigger(m_loop,
-                        () -> MathUtil.isNear(config.kReverseLimit, m_absoluteEncoder.getPosition(), config.kTolerance))
-                        .debounce(0.2).onTrue(this.run(() -> {
-                            stop();
-                            m_encoder.setPosition(0.0);
-                            kZeroed = true;
-                        }));
+                /*
+                 * m_forwardTrigger = new Trigger(m_loop,
+                 * () -> MathUtil.isNear(config.kForwardLimit, m_absoluteEncoder.getPosition(),
+                 * config.kTolerance))
+                 * .debounce(0.2).onTrue(this.run(this::stop));
+                 * m_reverseTrigger = new Trigger(m_loop,
+                 * () -> MathUtil.isNear(config.kReverseLimit, m_absoluteEncoder.getPosition(),
+                 * config.kTolerance))
+                 * .debounce(0.2).onTrue(this.run(() -> {
+                 * stop();
+                 * m_encoder.setPosition(0.0);
+                 * kZeroed = true;
+                 * }));
+                 */
                 break;
             case LIMIT_SWITCH:
                 if (RobotBase.isSimulation()) {

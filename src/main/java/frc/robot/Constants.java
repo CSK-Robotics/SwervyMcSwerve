@@ -174,7 +174,7 @@ public final class Constants {
 		private static final double kTravelDistance = Units.inchesToMeters(26);
 		private static final MotionConstraints kElevatorConstraints = new MotionConstraints(kZeroingSpeed,
 				new TrapezoidProfile.Constraints(Units.inchesToMeters(20.0), Units.inchesToMeters(40.0)),
-				ElevatorSubsystem.POSITIONS.get(FieldPosition.STARTING).m_value.get(), kTravelDistance);
+				0.0, kTravelDistance);
 		private static final CurrentLimits kElevatorCurrentLimits = new CurrentLimits(25, 40, 0.1, true);
 
 		// Sensor Constants
@@ -218,7 +218,7 @@ public final class Constants {
 			private static final double kMaxAngle = Units.degreesToRadians(180.0);
 			private static final MotionConstraints kArmConstraints = new MotionConstraints(kZeroingSpeed,
 					new TrapezoidProfile.Constraints(Units.degreesToRadians(90.0), Units.degreesToRadians(180.0)),
-					ClimberSubsystem.POSITIONS.get(FieldPosition.STARTING).m_value.get(), kMaxAngle);
+					0.0, kMaxAngle);
 			private static final CurrentLimits kArmCurrentLimits = new CurrentLimits(0, 40, 0.1, true);
 
 			// Sensor Constants
@@ -299,7 +299,7 @@ public final class Constants {
 			private static final double kMaxAngle = Units.degreesToRadians(180.0);
 			private static final MotionConstraints kArmConstraints = new MotionConstraints(kZeroingSpeed,
 					new TrapezoidProfile.Constraints(Units.degreesToRadians(90.0), Units.degreesToRadians(180.0)),
-					ClimberSubsystem.POSITIONS.get(FieldPosition.STARTING).m_value.get(), kMaxAngle);
+					0.0, kMaxAngle);
 			private static final CurrentLimits kArmCurrentLimits = new CurrentLimits(35, 40, 0.1, true);
 
 			// Sensor Constants
@@ -379,7 +379,7 @@ public final class Constants {
 		private static final double kMaxAngle = Units.degreesToRadians(270.0);
 		private static final MotionConstraints kArmConstraints = new MotionConstraints(kZeroingSpeed,
 				new TrapezoidProfile.Constraints(Units.degreesToRadians(90.0), Units.degreesToRadians(180.0)),
-				ClimberSubsystem.POSITIONS.get(FieldPosition.STARTING).m_value.get(), kMaxAngle);
+				0.0, kMaxAngle);
 		private static final CurrentLimits kArmCurrentLimits = new CurrentLimits(30, 40, 0.1, true);
 
 		// Sensor Constants

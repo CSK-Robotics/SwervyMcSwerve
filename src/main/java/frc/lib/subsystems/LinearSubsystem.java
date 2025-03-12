@@ -70,22 +70,26 @@ public class LinearSubsystem extends Subsystem {
                 .velocityConversionFactor(conversionFactor * 60));
         m_motor.configure(m_sparkConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
-        switch (constants.kLinearType) {
-            case ELEVETOR:
-                m_elevatorFeedForward = new ElevatorFeedforward(
-                        config.kFeedForwardGains.kS,
-                        config.kFeedForwardGains.kG,
-                        config.kFeedForwardGains.kV,
-                        config.kFeedForwardGains.kA);
-                break;
-            case FLYWHEEL:
-            case DRIVE:
-            case SIMPLE:
-                m_simpleFeedForward = new SimpleMotorFeedforward(config.kFeedForwardGains.kS,
-                        config.kFeedForwardGains.kV, config.kFeedForwardGains.kA, Robot.kDefaultPeriod);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown configuration type: " + constants.getClass().getName());
+        if (config.kFeedForwardGains != null) {
+            switch (constants.kLinearType) {
+                case ELEVETOR:
+                    m_elevatorFeedForward = new ElevatorFeedforward(
+                            config.kFeedForwardGains.kS,
+                            config.kFeedForwardGains.kG,
+                            config.kFeedForwardGains.kV,
+                            config.kFeedForwardGains.kA);
+                    break;
+                case FLYWHEEL:
+                case DRIVE:
+                case SIMPLE:
+                    m_simpleFeedForward = new SimpleMotorFeedforward(config.kFeedForwardGains.kS,
+                            config.kFeedForwardGains.kV, config.kFeedForwardGains.kA, Robot.kDefaultPeriod);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown configuration type: " + constants.getClass().getName());
+            }
+        } else {
+            m_simpleFeedForward = new SimpleMotorFeedforward(0.0,0.0,0.0, Robot.kDefaultPeriod);
         }
 
         m_loop.bind(this::updateTelemetry);

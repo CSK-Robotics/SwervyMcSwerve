@@ -69,6 +69,7 @@ public class Orchestrator {
     }
 
     public Command Drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
-        return m_drivetrain.run(() -> m_drivetrain.drive(xSpeed, ySpeed, rot, fieldRelative));
+        // System.out.println("x: " + xSpeed + ", y: " + ySpeed + ", theta: " + rot);
+        return m_drivetrain.drive(xSpeed, ySpeed, rot, fieldRelative);
     }
 }
