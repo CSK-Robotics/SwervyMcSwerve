@@ -20,8 +20,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 
 public class Robot extends TimedRobot {
   private final XboxController m_controller = new XboxController(0);
+  private final XboxController m_controller2 = new XboxController(1);
   private final Drivetrain m_swerve = new Drivetrain();
   private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
+  private final Climber  m_Climber = new Climber();
 
   // Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0 to 1.
   private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
@@ -47,6 +49,22 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     driveWithJoystick(false);
+    double getRightTriggerAxis = m_controller2.getRightTriggerAxis();
+    double getLeftTriggerAxis = m_controller2.getLeftTriggerAxis();
+    if(getRightTriggerAxis >= 0.2)
+    {
+      getRightTriggerAxis *= 12;
+      m_Climber.climb(getRightTriggerAxis);
+    }
+    else if(getLeftTriggerAxis >= 0.2)
+    {
+      getLeftTriggerAxis *= 12;
+      m_Climber.climb(-getLeftTriggerAxis);
+    }
+    else
+    {
+      m_Climber.climb(0);
+    }
   }
 
   @Override
