@@ -202,7 +202,7 @@ public class ElevatorSubsystem extends SubsystemBase {
                                         ElevatorConstants.kElevatorKd)*/
                                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder).outputRange(-1, 1)),
                 ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-        m_motor2.configure(new SparkMaxConfig().follow(m_motor, true), ResetMode.kResetSafeParameters,
+        m_motor2.configure(new SparkMaxConfig().follow(m_motor, false), ResetMode.kResetSafeParameters,
                 PersistMode.kPersistParameters);
         // Publish Mechanism2d to SmartDashboard
         // To view the Elevator visualization, select Network Tables -> SmartDashboard
