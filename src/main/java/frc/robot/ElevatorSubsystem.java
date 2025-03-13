@@ -105,8 +105,8 @@ public class ElevatorSubsystem extends SubsystemBase {
      * ElevatorConstants.kMaxAcceleration));
      */
     // SparkMax and Encoder
-    private final SparkMax m_motor = new SparkMax(12, MotorType.kBrushless);
-    private final SparkMax m_motor2 = new SparkMax(13, MotorType.kBrushless);
+    private final SparkMax m_motor = new SparkMax(9, MotorType.kBrushless);
+    private final SparkMax m_motor2 = new SparkMax(10, MotorType.kBrushless);
     // private final SparkMaxSim m_motorSim = new SparkMaxSim(m_motor,
     // m_elevatorGearbox);
     private final RelativeEncoder m_encoder = m_motor.getEncoder();
@@ -198,8 +198,8 @@ public class ElevatorSubsystem extends SubsystemBase {
                 new SparkMaxConfig().smartCurrentLimit(ElevatorConstants.kElevatorCurrentLimit)
                         .closedLoopRampRate(ElevatorConstants.kElevatorRampRate)
                         .apply(new ClosedLoopConfig()
-                                .pid(ElevatorConstants.kElevatorKp, ElevatorConstants.kElevatorKi,
-                                        ElevatorConstants.kElevatorKd)
+                                /*.pid(ElevatorConstants.kElevatorKp, ElevatorConstants.kElevatorKi,
+                                        ElevatorConstants.kElevatorKd)*/
                                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder).outputRange(-1, 1)),
                 ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         m_motor2.configure(new SparkMaxConfig().follow(m_motor, true), ResetMode.kResetSafeParameters,
@@ -323,7 +323,7 @@ public class ElevatorSubsystem extends SubsystemBase {
                 new State(m_encoder.getPosition(), m_encoder.getVelocity()),
                 new State(goal, 0.0));*/
         //double feedforward = m_feedforward.calculateWithVelocities(m_encoder.getVelocity(), setpoint.velocity);
-        m_controller.setReference(goal * 12, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        m_controller.setReference(goal * 12, ControlType.kVoltage, ClosedLoopSlot.kSlot0);
     }
 
     /**

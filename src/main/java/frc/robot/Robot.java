@@ -78,7 +78,7 @@ public class Robot extends TimedRobot {
             * Drivetrain.kMaxAngularSpeed;
     m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative, getPeriod());
 
-    m_elevator.reachGoal(m_controller.getRightTriggerAxis());
+    //m_elevator.reachGoal(m_controller.getRightTriggerAxis());
   }
 
   public Command getAutonomousCommand() {
