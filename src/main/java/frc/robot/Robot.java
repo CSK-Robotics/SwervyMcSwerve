@@ -9,8 +9,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
@@ -23,7 +21,9 @@ public class Robot extends TimedRobot {
   private final XboxController m_controller2 = new XboxController(1);
   private final Drivetrain m_swerve = new Drivetrain();
   private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
-  private final Climber  m_Climber = new Climber();
+  private final Climber m_Climber = new Climber();
+  private final Coral m_coral = new Coral();
+  private final Algae m_algae = new Algae();
 
   // Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0 to 1.
   private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
@@ -39,7 +39,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
-    //m_swerve.updateOdometry();
+    // m_swerve.updateOdometry();
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
@@ -49,22 +49,9 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     driveWithJoystick(false);
-    double getRightTriggerAxis = m_controller2.getRightTriggerAxis();
-    double getLeftTriggerAxis = m_controller2.getLeftTriggerAxis();
-    if(getRightTriggerAxis >= 0.2)
-    {
-      getRightTriggerAxis *= 12;
-      m_Climber.climb(getRightTriggerAxis);
-    }
-    else if(getLeftTriggerAxis >= 0.2)
-    {
-      getLeftTriggerAxis *= 12;
-      m_Climber.climb(-getLeftTriggerAxis);
-    }
-    else
-    {
-      m_Climber.climb(0);
-    }
+    controlElevator();
+    controlClimber();
+    controlCoral();
   }
 
   @Override
@@ -76,38 +63,59 @@ public class Robot extends TimedRobot {
   private void driveWithJoystick(boolean fieldRelative) {
     // Get the x speed. We are inverting this because Xbox controllers return
     // negative values when we push forward.
-    final var xSpeed =
-        -m_xspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftY(), 0.02))
-            * Drivetrain.kMaxSpeed;
+    final var xSpeed = -m_xspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftY(), 0.02))
+        * Drivetrain.kMaxSpeed;
 
     // Get the y speed or sideways/strafe speed. We are inverting this because
     // we want a positive value when we pull to the left. Xbox controllers
     // return positive values when you pull to the right by default.
-    final var ySpeed =
-        -m_yspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftX(), 0.02))
-            * Drivetrain.kMaxSpeed;
+    final var ySpeed = -m_yspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftX(), 0.02))
+        * Drivetrain.kMaxSpeed;
 
     // Get the rate of angular rotation. We are inverting this because we want a
     // positive value when we pull to the left (remember, CCW is positive in
     // mathematics). Xbox controllers return positive values when you pull to
     // the right by default.
-    final var rot =
-        -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02))
-            * Drivetrain.kMaxAngularSpeed;
+    final var rot = -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02))
+        * Drivetrain.kMaxAngularSpeed;
     m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative, getPeriod());
+    // m_elevator.reachGoal(m_controller.getRightTriggerAxis());
+  }
 
-    //m_elevator.reachGoal(m_controller.getRightTriggerAxis());
+  private void controlElevator() {
+    double elevatorSpeed = m_controller2.getRightY() * 12;
+    m_elevator.reachGoal(elevatorSpeed);
+  }
+
+  private void controlClimber() {
+    double getRightTriggerAxis = m_controller2.getRightTriggerAxis();
+    double getLeftTriggerAxis = m_controller2.getLeftTriggerAxis();
+    if (getRightTriggerAxis >= 0.2) {
+      getRightTriggerAxis *= 12;
+      m_Climber.climb(getRightTriggerAxis);
+    } else if (getLeftTriggerAxis >= 0.2) {
+      getLeftTriggerAxis *= 12;
+      m_Climber.climb(-getLeftTriggerAxis);
+    } else {
+      m_Climber.climb(0);
+    }
+  }
+
+  private void controlCoral() {
+    double coralSpeed = m_controller2.getLeftY() * 12;
+    m_coral.reachGoal(coralSpeed);
   }
 
   public Command getAutonomousCommand() {
-    try{
-        // Load the path you want to follow using its name in the GUI
-        PathPlannerPath path = PathPlannerPath.fromPathFile("TestPath1");
-        // Create a path following command using AutoBuilder. This will also trigger event markers.
-        return AutoBuilder.followPath(path);
+    try {
+      // Load the path you want to follow using its name in the GUI
+      PathPlannerPath path = PathPlannerPath.fromPathFile("TestPath1");
+      // Create a path following command using AutoBuilder. This will also trigger
+      // event markers.
+      return AutoBuilder.followPath(path);
     } catch (Exception e) {
-        DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
-        return Commands.none();
+      DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
+      return Commands.none();
     }
   }
 }
