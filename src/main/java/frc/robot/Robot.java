@@ -12,18 +12,23 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.event.EventLoop;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.ElevatorSubsystem.Position;
 
 public class Robot extends TimedRobot {
   private final XboxController m_controller = new XboxController(0);
-  private final XboxController m_controller2 = new XboxController(1);
+  //private final XboxController m_controller2 = new XboxController(1);
   private final Drivetrain m_swerve = new Drivetrain();
-  private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
+  private final EventLoop m_loop = new EventLoop();
+  //private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
   private final Climber m_Climber = new Climber();
-  private final Coral m_coral = new Coral();
-  private final Algae m_algae = new Algae();
+
+  //private final Coral m_coral = new Coral();
+  //private final Algae m_algae = new Algae();
 
   // Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0 to 1.
   private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
@@ -47,11 +52,18 @@ public class Robot extends TimedRobot {
   }
 
   @Override
+  public void teleopInit() {
+    m_controller.a(m_loop).ifHigh(m_swerve::reset);
+  }
+
+  @Override
   public void teleopPeriodic() {
-    driveWithJoystick(false);
-    controlElevator();
+    driveWithJoystick(true);
+    //controlElevator();
     controlClimber();
-    controlCoral();
+    m_loop.poll();
+    //controlCoral();
+    // controlAlgae();
   }
 
   @Override
@@ -81,15 +93,29 @@ public class Robot extends TimedRobot {
     m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative, getPeriod());
     // m_elevator.reachGoal(m_controller.getRightTriggerAxis());
   }
-
+/*
   private void controlElevator() {
-    double elevatorSpeed = m_controller2.getRightY() * 12;
-    m_elevator.reachGoal(elevatorSpeed);
+    // double elevatorSpeed = MathUtil.applyDeadband(m_controller2.getRightY(),
+    // 0.04) * 4;
+    // double elevatorSpeed = MathUtil.applyDeadband(m_controller2.getRightY(),
+    // 0.04) >= 0.7 ? 12.0 : 0.0;
+    // m_elevator.reachGoal(elevatorSpeed);
+    if (m_controller2.getStartButton())
+      m_elevator.set(Position.ZERO);
+    if (m_controller2.getAButton())
+      m_elevator.set(Position.L1);
+    if (m_controller2.getBButton())
+      m_elevator.set(Position.L2);
+    if (m_controller2.getXButton())
+      m_elevator.set(Position.L3);
+    if (m_controller2.getYButton())
+      m_elevator.set(Position.L4);
+    // SmartDashboard.putNumber("Elevator Setpoint", elevatorSpeed);
   }
-
+ */
   private void controlClimber() {
-    double getRightTriggerAxis = m_controller2.getRightTriggerAxis();
-    double getLeftTriggerAxis = m_controller2.getLeftTriggerAxis();
+    double getRightTriggerAxis = m_controller.getRightTriggerAxis();
+    double getLeftTriggerAxis = m_controller.getLeftTriggerAxis();
     if (getRightTriggerAxis >= 0.2) {
       getRightTriggerAxis *= 12;
       m_Climber.climb(getRightTriggerAxis);
@@ -100,22 +126,35 @@ public class Robot extends TimedRobot {
       m_Climber.climb(0);
     }
   }
-
+/*
   private void controlCoral() {
-    double coralSpeed = m_controller2.getLeftY() * 12;
+    double coralSpeed = m_controller2.getLeftY() * 3;
     m_coral.reachGoal(coralSpeed);
+
+    double wheelSpeed = m_controller2.getLeftTriggerAxis() >= 0.2 ? m_controller2.getLeftTriggerAxis()
+        : -m_controller2.getRightTriggerAxis();
+    m_coral.runWheel(wheelSpeed);
   }
 
+  private void controlAlgae() {
+    double wheelSpeed = m_controller.getLeftBumperButton() ? 0.8 : m_controller.getRightBumperButton() ? -0.8 : 0.0;
+    //m_algae.runWheel(wheelSpeed);
+  }
+ */
   public Command getAutonomousCommand() {
-    try {
-      // Load the path you want to follow using its name in the GUI
-      PathPlannerPath path = PathPlannerPath.fromPathFile("TestPath1");
-      // Create a path following command using AutoBuilder. This will also trigger
-      // event markers.
-      return AutoBuilder.followPath(path);
-    } catch (Exception e) {
-      DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
-      return Commands.none();
-    }
+    /*
+     * try {
+     * // Load the path you want to follow using its name in the GUI
+     * PathPlannerPath path = PathPlannerPath.fromPathFile("TestPath1");
+     * // Create a path following command using AutoBuilder. This will also trigger
+     * // event markers.
+     * return AutoBuilder.followPath(path);
+     * } catch (Exception e) {
+     * DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
+     * return Commands.none();
+     * }
+     */
+
+    return m_swerve.run(() -> m_swerve.drive(0.0, 0.5, 0.0, false, getPeriod())).until(() -> isTeleop());
   }
 }

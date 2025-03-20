@@ -6,9 +6,12 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig;
+import com.revrobotics.spark.config.EncoderConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -26,6 +29,7 @@ public class Coral extends SubsystemBase {
     private boolean kZeroed;
 
     private SparkMax m_motor = new SparkMax(11, MotorType.kBrushless);
+    private SparkFlex m_wheelMotor = new SparkFlex(12, MotorType.kBrushless);
     private RelativeEncoder m_encoder = m_motor.getEncoder();
     private SparkClosedLoopController m_controller = m_motor.getClosedLoopController();
     // This gearbox represents a gearbox containing 2 Neos
@@ -36,17 +40,20 @@ public class Coral extends SubsystemBase {
             new TrapezoidProfile.Constraints(CoralConstants.kArmMaxVelocity,
                     CoralConstants.kArmMaxAcceleration));
 
-    private DigitalInput m_limitSwitch = new DigitalInput(0);
+    private DigitalInput m_limitSwitch = new DigitalInput(1);
 
-    public Trigger atMin = new Trigger(m_limitSwitch::get).onTrue(this.run(() -> {
+    public Trigger atMin = new Trigger(m_limitSwitch::get).onFalse(this.runOnce(() -> {
         stop();
+        System.out.println("I aM ToUchIng tHe LimIt SwiTcH");
         m_encoder.setPosition(0.0);
         kZeroed = true;
     }));
 
     public Coral() {
-        m_motor.configure(new SparkMaxConfig().apply(new ClosedLoopConfig()), ResetMode.kResetSafeParameters,
+        m_motor.configure(new SparkMaxConfig().apply(new ClosedLoopConfig()).apply(new EncoderConfig().positionConversionFactor(360 / (Math.PI * 2))), ResetMode.kResetSafeParameters,
                 PersistMode.kPersistParameters);
+
+        m_wheelMotor.configure(new SparkFlexConfig().apply(new ClosedLoopConfig()), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     /**
@@ -80,11 +87,7 @@ public class Coral extends SubsystemBase {
         // double feedforward =
         // m_feedforward.calculateWithVelocities(m_encoder.getVelocity(),
         // setpoint.velocity);
-        m_controller.setReference(setpoint.velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
-    }
-
-    public void climb(double speed) {
-        m_controller.setReference(speed, ControlType.kVoltage);
+        m_controller.setReference(goal, ControlType.kVoltage, ClosedLoopSlot.kSlot0);
     }
 
     public void stop() {
@@ -99,7 +102,11 @@ public class Coral extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        SmartDashboard.putBoolean("Coral Zeroed", kZeroed);
+        SmartDashboard.putBoolean("Coral Zeroed", !m_limitSwitch.get());
         SmartDashboard.putNumber("Coral Angle", getAngle());
+    }
+
+    public void runWheel(double speed) {
+        m_wheelMotor.setVoltage(speed *6);
     }
 }

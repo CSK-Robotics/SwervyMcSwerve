@@ -18,6 +18,8 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.math.GeometryUtils;
 import frc.lib.util.swerveUtil.RevSwerveModuleConstants;
@@ -26,6 +28,9 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
+import com.studica.frc.*;
+import com.studica.frc.AHRS.NavXComType;;
 
 /** Represents a swerve drive style drivetrain. */
 public class Drivetrain extends SubsystemBase {
@@ -42,7 +47,8 @@ public class Drivetrain extends SubsystemBase {
   private final SwerveModule m_backLeft = new SwerveModule(4, 3, 11, Constants.Swerve.Modules.Mod2.constants, "m_backLeft", false);
   private final SwerveModule m_backRight = new SwerveModule(6, 5, 12, Constants.Swerve.Modules.Mod3.constants, "m_backRight", true);
 
-  private final AnalogGyro m_gyro = new AnalogGyro(0);
+  //private final AnalogGyro m_gyro = new AnalogGyro(0);
+  private final AHRS m_gyro = new AHRS(NavXComType.kUSB1); /* Alternatives:  SPI.Port.kMXP, I2C.Port.kMXP or SerialPort.Port.kUSB */
 
   private final SwerveDriveKinematics m_kinematics =
       new SwerveDriveKinematics(
@@ -205,5 +211,14 @@ public class Drivetrain extends SubsystemBase {
           posData_m_backLeft,
           posData_m_backRight
         });
+  }
+
+  public void reset() {
+    m_gyro.zeroYaw();
+  }
+
+  @Override
+  public void periodic() {
+    SmartDashboard.putNumber("Gyro", m_gyro.getRotation2d().getDegrees());
   }
 }

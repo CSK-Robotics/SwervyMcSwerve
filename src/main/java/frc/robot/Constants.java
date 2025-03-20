@@ -229,9 +229,9 @@ public final class Constants {
     }
 
     public static class ElevatorConstants {
-        public static final double kElevatorKp = 26.722;
-        public static final double kElevatorKi = 0;
-        public static final double kElevatorKd = 1.6047;
+        public static final double kElevatorKp = 0.0;
+        public static final double kElevatorKi = 0.0;
+        public static final double kElevatorKd = 0.0;
 
         public static final double kElevatorkS = 0.01964; // volts (V)
         public static final double kElevatorkV = 3.894; // volt per velocity (V/(m/s))
@@ -256,8 +256,8 @@ public final class Constants {
 
         public static double kElevatorRampRate = 0.1;
         public static int kElevatorCurrentLimit = 40;
-        public static double kMaxVelocity = Meters.of(4).per(Second).in(MetersPerSecond);
-        public static double kMaxAcceleration = Meters.of(8).per(Second).per(Second)
+        public static double kMaxVelocity = Inches.of(30).per(Second).in(MetersPerSecond);
+        public static double kMaxAcceleration = Inches.of(15).per(Second).per(Second)
                 .in(MetersPerSecondPerSecond);
     }
 

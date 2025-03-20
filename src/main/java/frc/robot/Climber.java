@@ -11,16 +11,18 @@ import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 public class Climber {
-    private SparkMax m_climberMotor = new SparkMax(11, MotorType.kBrushless);
+    private SparkMax m_climberMotor = new SparkMax(14, MotorType.kBrushless);
+    private SparkMax m_climberMotor2 = new SparkMax(15, MotorType.kBrushless);
     private RelativeEncoder m_encoder = m_climberMotor.getEncoder();
     private SparkClosedLoopController m_controller = m_climberMotor.getClosedLoopController();
 
     public Climber() {
         m_climberMotor.configure(new SparkMaxConfig().apply(new ClosedLoopConfig()), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        m_climberMotor2.configure(new SparkMaxConfig().follow(m_climberMotor, true), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     public void climb(double speed) {
-        m_controller.setReference(speed, ControlType.kVoltage);
+        m_controller.setReference(speed, ControlType.kCurrent);
     }
 
     public void stop() {
