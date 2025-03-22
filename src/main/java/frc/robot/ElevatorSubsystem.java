@@ -179,7 +179,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     public ElevatorSubsystem() {
         // kZeroed = false;
         m_motor.configure(
-                new SparkMaxConfig().inverted(true).smartCurrentLimit(ElevatorConstants.kElevatorCurrentLimit)
+                new SparkMaxConfig().inverted(false).smartCurrentLimit(ElevatorConstants.kElevatorCurrentLimit)
                         .apply(new EncoderConfig()
                                 .positionConversionFactor(kConversionFactor))
                         // .velocityConversionFactor())
@@ -324,7 +324,9 @@ public class ElevatorSubsystem extends SubsystemBase {
         // m_feedforward.calculateWithVelocities(m_encoder.getVelocity(),
         // setpoint.velocity);
         // m_motor.stopMotor();
-        m_controller.setReference(goal, ControlType.kVoltage, ClosedLoopSlot.kSlot0);
+        //System.out.println("Calling Reach Goal");
+        m_motor.setVoltage(goal);
+        //m_controller.setReference(goal, ControlType.kVoltage, ClosedLoopSlot.kSlot0);
     }
 
     /**
@@ -360,26 +362,33 @@ public class ElevatorSubsystem extends SubsystemBase {
     public void periodic() {
         // This method will be called once per scheduler run
         SmartDashboard.putBoolean("Elevator Zeroed", !m_limitSwitchLow.get());
+        SmartDashboard.putNumber("Elevator Target", target);
         SmartDashboard.putNumber("Elevator Height", getCarriageHeight());
         SmartDashboard.putNumber("Elevator Velocity", getCarriageVelocity());
         SmartDashboard.putNumber("Elevator Output Voltage", m_motor.getAppliedOutput() * m_motor.getBusVoltage());
 
         if (getCarriageHeight() < 0.0 || !m_limitSwitchLow.get()) {
             m_encoder.setPosition(0.0);
+            SmartDashboard.putString("Elevator State", "Zeroed.");
         }
 
         if (MathUtil.isNear(target, getCarriageHeight(), 1)) {
             if (target != 0.0) {
                 reachGoal(0.26);
+                SmartDashboard.putString("Elevator State", "Hold position.");
             } else {
                 stop();
+                SmartDashboard.putString("Elevator State", "STOP");
             }
         } else if (getCarriageHeight() < target) {
             reachGoal(3.5);
+            SmartDashboard.putString("Elevator State", "Going Up.");
         } else if (getCarriageHeight() > target) {
             reachGoal(-2.5);
+            SmartDashboard.putString("Elevator State", "Going Down.");
         } else {
             stop();
+            SmartDashboard.putString("Elevator State", "STOP");
         }
     }
 }

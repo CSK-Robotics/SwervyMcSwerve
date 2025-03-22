@@ -34,7 +34,7 @@ import com.studica.frc.AHRS.NavXComType;;
 
 /** Represents a swerve drive style drivetrain. */
 public class Drivetrain extends SubsystemBase {
-  public static final double kMaxSpeed = 3.0; // 3 meters per second
+  public static final double kMaxSpeed = 2.0; // 3 meters per second
   public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
 
   private final Translation2d m_frontLeftLocation = new Translation2d(Constants.Swerve.wheelBase / 2.0, Constants.Swerve.trackWidth / 2.0);
@@ -137,7 +137,7 @@ public class Drivetrain extends SubsystemBase {
    */
   public void drive(
       double xSpeed, double ySpeed, double rot, boolean fieldRelative, double periodSeconds) {
-
+        
     ChassisSpeeds desiredChassisSpeeds =
       fieldRelative ?
       ChassisSpeeds.fromFieldRelativeSpeeds(
@@ -165,6 +165,24 @@ public class Drivetrain extends SubsystemBase {
     m_backLeft.setDesiredState(swerveModuleStates[2], "backLeft", true);
     m_backRight.setDesiredState(swerveModuleStates[3], "backRight", true);
     
+  }
+
+  public void lockWheels(){
+
+    SwerveModuleState
+     fr = new SwerveModuleState(0, new Rotation2d(45));
+     SwerveModuleState
+     fl = new SwerveModuleState(0, new Rotation2d(-45));
+     SwerveModuleState
+     rl = new SwerveModuleState(0, new Rotation2d(45));
+     SwerveModuleState
+     rr = new SwerveModuleState(0, new Rotation2d(-45));
+
+
+    m_frontLeft.setDesiredState(fl, "frontLeft", true);
+    m_frontRight.setDesiredState(fr, "frontRight", true);
+    m_backLeft.setDesiredState(rl, "backLeft", true);
+    m_backRight.setDesiredState(rr, "backRight", true);
   }
 
   public Pose2d getPose(){

@@ -107,6 +107,6 @@ public class Coral extends SubsystemBase {
     }
 
     public void runWheel(double speed) {
-        m_wheelMotor.setVoltage(speed *6);
+        m_wheelMotor.setVoltage(speed *9);
     }
 }

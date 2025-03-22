@@ -21,13 +21,13 @@ import frc.robot.ElevatorSubsystem.Position;
 
 public class Robot extends TimedRobot {
   private final XboxController m_controller = new XboxController(0);
-  //private final XboxController m_controller2 = new XboxController(1);
+  private final XboxController m_controller2 = new XboxController(1);
   private final Drivetrain m_swerve = new Drivetrain();
   private final EventLoop m_loop = new EventLoop();
-  //private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
-  private final Climber m_Climber = new Climber();
+  private final ElevatorSubsystem m_elevator = new ElevatorSubsystem();
+  // private final Climber m_Climber = new Climber();
 
-  //private final Coral m_coral = new Coral();
+  private final Coral m_coral = new Coral();
   //private final Algae m_algae = new Algae();
 
   // Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0 to 1.
@@ -35,6 +35,8 @@ public class Robot extends TimedRobot {
   private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(3);
   private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(3);
   private Command m_autonomousCommand;
+
+  public boolean prevX = false;
 
   @Override
   public void autonomousInit() {
@@ -58,11 +60,16 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    driveWithJoystick(true);
-    //controlElevator();
-    controlClimber();
+    if(!m_controller.getXButton())driveWithJoystick(true);
+   
+
+    if( m_controller.getXButton()){
+      m_swerve.lockWheels();
+    }
+    controlElevator();
+    // controlClimber();
     m_loop.poll();
-    //controlCoral();
+    controlCoral();
     // controlAlgae();
   }
 
@@ -75,25 +82,25 @@ public class Robot extends TimedRobot {
   private void driveWithJoystick(boolean fieldRelative) {
     // Get the x speed. We are inverting this because Xbox controllers return
     // negative values when we push forward.
-    final var xSpeed = -m_xspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftY(), 0.02))
+    final var xSpeed = Math.pow(-m_xspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftY(), 0.02)), 3)
         * Drivetrain.kMaxSpeed;
 
     // Get the y speed or sideways/strafe speed. We are inverting this because
     // we want a positive value when we pull to the left. Xbox controllers
     // return positive values when you pull to the right by default.
-    final var ySpeed = -m_yspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftX(), 0.02))
+    final var ySpeed = Math.pow(-m_yspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftX(), 0.02)), 3)
         * Drivetrain.kMaxSpeed;
 
     // Get the rate of angular rotation. We are inverting this because we want a
     // positive value when we pull to the left (remember, CCW is positive in
     // mathematics). Xbox controllers return positive values when you pull to
     // the right by default.
-    final var rot = -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02))
+    final var rot = Math.pow(-m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02)), 3)
         * Drivetrain.kMaxAngularSpeed;
     m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative, getPeriod());
     // m_elevator.reachGoal(m_controller.getRightTriggerAxis());
   }
-/*
+
   private void controlElevator() {
     // double elevatorSpeed = MathUtil.applyDeadband(m_controller2.getRightY(),
     // 0.04) * 4;
@@ -112,8 +119,8 @@ public class Robot extends TimedRobot {
       m_elevator.set(Position.L4);
     // SmartDashboard.putNumber("Elevator Setpoint", elevatorSpeed);
   }
- */
-  private void controlClimber() {
+ 
+  /* private void controlClimber() {
     double getRightTriggerAxis = m_controller.getRightTriggerAxis();
     double getLeftTriggerAxis = m_controller.getLeftTriggerAxis();
     if (getRightTriggerAxis >= 0.2) {
@@ -126,7 +133,7 @@ public class Robot extends TimedRobot {
       m_Climber.climb(0);
     }
   }
-/*
+ */
   private void controlCoral() {
     double coralSpeed = m_controller2.getLeftY() * 3;
     m_coral.reachGoal(coralSpeed);
@@ -135,7 +142,7 @@ public class Robot extends TimedRobot {
         : -m_controller2.getRightTriggerAxis();
     m_coral.runWheel(wheelSpeed);
   }
-
+  /* 
   private void controlAlgae() {
     double wheelSpeed = m_controller.getLeftBumperButton() ? 0.8 : m_controller.getRightBumperButton() ? -0.8 : 0.0;
     //m_algae.runWheel(wheelSpeed);
